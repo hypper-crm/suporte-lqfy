@@ -6,7 +6,7 @@ import {
   subscribeToClientChanges,
   updateClient as updateClientRequest,
 } from '../services/clientService'
-import type { ClientInput } from '../types/client'
+import type { ClientCoverChange, ClientInput } from '../types/client'
 import type { Client } from '../types/database'
 
 export type ClientsState = {
@@ -15,9 +15,9 @@ export type ClientsState = {
   loadErrorMessage: string | null
   isRealtimeDisconnected: boolean
   reload: () => void
-  createClient: (input: ClientInput) => Promise<void>
-  updateClient: (clientId: string, input: ClientInput) => Promise<void>
-  deleteClient: (clientId: string) => Promise<void>
+  createClient: (input: ClientInput, coverChange: ClientCoverChange) => Promise<void>
+  updateClient: (client: Client, input: ClientInput, coverChange: ClientCoverChange) => Promise<void>
+  deleteClient: (client: Client) => Promise<void>
 }
 
 function sortByName(clients: Client[]): Client[] {
@@ -71,19 +71,19 @@ export function useClients(): ClientsState {
 
   const reload = useCallback(() => setReloadCount((count) => count + 1), [])
 
-  const createClient = useCallback(async (input: ClientInput) => {
-    const createdClient = await createClientRequest(input)
+  const createClient = useCallback(async (input: ClientInput, coverChange: ClientCoverChange) => {
+    const createdClient = await createClientRequest(input, coverChange)
     setClients((current) => upsertClient(current, createdClient))
   }, [])
 
-  const updateClient = useCallback(async (clientId: string, input: ClientInput) => {
-    const updatedClient = await updateClientRequest(clientId, input)
+  const updateClient = useCallback(async (client: Client, input: ClientInput, coverChange: ClientCoverChange) => {
+    const updatedClient = await updateClientRequest(client, input, coverChange)
     setClients((current) => upsertClient(current, updatedClient))
   }, [])
 
-  const deleteClient = useCallback(async (clientId: string) => {
-    await deleteClientRequest(clientId)
-    setClients((current) => removeClient(current, clientId))
+  const deleteClient = useCallback(async (client: Client) => {
+    await deleteClientRequest(client)
+    setClients((current) => removeClient(current, client.id))
   }, [])
 
   return { clients, isLoading, loadErrorMessage, isRealtimeDisconnected, reload, createClient, updateClient, deleteClient }

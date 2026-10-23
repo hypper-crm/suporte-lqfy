@@ -11,6 +11,7 @@ export type CardRequestType = 'question' | 'bug' | 'request' | 'other'
 export type Profile = {
   id: string
   full_name: string | null
+  avatar_url: string | null
   created_at: string
 }
 
@@ -21,6 +22,8 @@ export type Client = {
   niche: string | null
   pay_in_rate: number | null
   pay_out_rate: number | null
+  website: string | null
+  cover_image_url: string | null
   created_at: string
   updated_at: string
 }
@@ -39,7 +42,6 @@ export type Card = {
   title: string
   description: string | null
   client_id: string | null
-  assignee_id: string | null
   start_date: string | null
   position: number
   priority: CardPriority | null
@@ -47,6 +49,12 @@ export type Card = {
   created_by: string | null
   created_at: string
   updated_at: string
+}
+
+// Team members assigned to a card. A card can have many assignees.
+export type CardAssignee = {
+  card_id: string
+  profile_id: string
 }
 
 export type CardAttachment = {

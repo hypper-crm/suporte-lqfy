@@ -3,7 +3,9 @@ import { CSS } from '@dnd-kit/utilities'
 import { motion, type Variants } from 'motion/react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
 import { boards } from '../../i18n/pt-BR'
-import type { Card, Client, Profile } from '../../types/database'
+import type { ColumnStatus } from '../../types/board'
+import type { Card, Client } from '../../types/database'
+import type { AvatarStackPerson } from '../ui/AvatarStack'
 import { fluidEaseCss } from '../ui/motionPresets'
 import { CardContent } from './CardContent'
 
@@ -26,13 +28,14 @@ export const cardPresenceVariants: Variants = {
 type SortableCardProps = {
   card: Card
   client: Client | undefined
-  assignee: Profile | undefined
+  assignees: AvatarStackPerson[]
   taskProgress: TaskProgress | undefined
+  columnStatus: ColumnStatus | undefined
   presenceContext: CardPresenceContext
   onOpen: (cardId: string) => void
 }
 
-export function SortableCard({ card, client, assignee, taskProgress, presenceContext, onOpen }: SortableCardProps) {
+export function SortableCard({ card, client, assignees, taskProgress, columnStatus, presenceContext, onOpen }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     transition: { duration: 250, easing: fluidEaseCss },
@@ -70,8 +73,9 @@ export function SortableCard({ card, client, assignee, taskProgress, presenceCon
         <CardContent
           card={card}
           client={client}
-          assignee={assignee}
+          assignees={assignees}
           taskProgress={taskProgress}
+          columnStatus={columnStatus}
           appearance={isDragging ? 'placeholder' : 'default'}
         />
       </div>

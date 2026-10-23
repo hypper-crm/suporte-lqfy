@@ -18,7 +18,9 @@ import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { motion, useReducedMotion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
+import { toAssigneePeople } from '../../lib/assignees'
 import { groupCardIdsByColumn, positionBetween, type CardIdsByColumn } from '../../lib/cardPosition'
+import { getColumnStatuses } from '../../lib/columnStatus'
 import { mouseActivationConstraint, touchActivationConstraint } from '../../lib/dragSensors'
 import type { CardMove } from '../../types/board'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
@@ -30,6 +32,7 @@ type KanbanBoardProps = {
   columns: BoardColumn[]
   cards: Card[]
   clients: Client[]
+  assigneeIdsByCardId: Map<string, string[]>
   profilesById: Record<string, Profile>
   progressByCardId: Map<string, TaskProgress>
   onMoveCard: (cardId: string, move: CardMove) => void
@@ -70,6 +73,7 @@ export function KanbanBoard({
   columns,
   cards,
   clients,
+  assigneeIdsByCardId,
   profilesById,
   progressByCardId,
   onMoveCard,
@@ -90,6 +94,11 @@ export function KanbanBoard({
   const savedCardIds = useMemo(() => groupCardIdsByColumn(columns, cards), [columns, cards])
   const cardsById = useMemo(() => new Map(cards.map((card) => [card.id, card])), [cards])
   const clientsById = useMemo(() => new Map(clients.map((client) => [client.id, client])), [clients])
+  // Only implementation cards show the column as a status badge.
+  const columnStatuses = useMemo(
+    () => (columns[0]?.board === 'implementation' ? getColumnStatuses(columns) : undefined),
+    [columns],
+  )
   const visibleCardIds = previewCardIds ?? savedCardIds
   const activeCard = activeCardId ? cardsById.get(activeCardId) : undefined
   const presenceContext = useMemo(
@@ -167,7 +176,7 @@ export function KanbanBoard({
       {/* Below the md breakpoint columns snap into place. Snapping pauses while dragging so auto-scroll can move freely. */}
       <motion.div
         layoutScroll
-        className={`flex items-start gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pt-5 pb-6 md:h-full md:gap-4 md:px-8 md:pt-6 ${
+        className={`flex items-start gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pt-4 pb-6 md:h-full md:gap-4 md:px-8 md:pt-5 ${
           activeCardId ? '' : 'snap-x snap-mandatory md:snap-none'
         }`}
       >
@@ -178,7 +187,9 @@ export function KanbanBoard({
             cards={(visibleCardIds[column.id] ?? []).flatMap((id) => cardsById.get(id) ?? [])}
             clients={clients}
             clientsById={clientsById}
+            assigneeIdsByCardId={assigneeIdsByCardId}
             profilesById={profilesById}
+            columnStatus={columnStatuses?.get(column.id)}
             progressByCardId={progressByCardId}
             presenceContext={presenceContext}
             onCreateCard={onCreateCard}
@@ -191,8 +202,9 @@ export function KanbanBoard({
           <CardContent
             card={activeCard}
             client={activeCard.client_id ? clientsById.get(activeCard.client_id) : undefined}
-            assignee={activeCard.assignee_id ? profilesById[activeCard.assignee_id] : undefined}
+            assignees={toAssigneePeople(assigneeIdsByCardId.get(activeCard.id), profilesById)}
             taskProgress={progressByCardId.get(activeCard.id)}
+            columnStatus={columnStatuses?.get(findColumnId(visibleCardIds, activeCard.id) ?? activeCard.column_id)}
             appearance="dragOverlay"
           />
         )}

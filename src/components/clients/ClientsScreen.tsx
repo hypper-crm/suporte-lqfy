@@ -70,9 +70,9 @@ export function ClientsScreen() {
         <ClientFormDrawer
           key={client.id}
           client={client}
-          onSave={(input) => updateClient(client.id, input)}
+          onSave={(input, coverChange) => updateClient(client, input, coverChange)}
           onDelete={async () => {
-            await deleteClient(client.id)
+            await deleteClient(client)
             closeForm()
           }}
           onClose={closeForm}

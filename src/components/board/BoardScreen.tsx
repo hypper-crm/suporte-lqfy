@@ -10,7 +10,7 @@ import type { Board } from '../../types/database'
 import { Button } from '../ui/Button'
 import { StatusMessage } from '../ui/StatusMessage'
 import { BoardSkeleton } from './BoardSkeleton'
-import { BoardSummaryCards } from './BoardSummaryCards'
+import { BoardMetricChips } from './BoardMetricChips'
 import { KanbanBoard } from './KanbanBoard'
 
 type BoardScreenProps = {
@@ -20,10 +20,13 @@ type BoardScreenProps = {
 
 const noTasks: never[] = []
 
+const noAssigneeIds: string[] = []
+
 export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
   const {
     columns,
     cards,
+    assigneeIdsByCardId,
     profilesById,
     isLoading,
     loadErrorMessage,
@@ -98,7 +101,16 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
 
   function renderDrawer() {
     if (!selectedCardId) return null
-    const drawerProps = { card: selectedCard, clients, profiles, currentUserId, onSave: updateCard, onDelete: deleteCard, onClose: closeDrawer }
+    const drawerProps = {
+      card: selectedCard,
+      assigneeIds: assigneeIdsByCardId.get(selectedCardId) ?? noAssigneeIds,
+      clients,
+      profiles,
+      currentUserId,
+      onSave: updateCard,
+      onDelete: deleteCard,
+      onClose: closeDrawer,
+    }
 
     if (board === 'support') return <SupportCardDrawer key="card-details" {...drawerProps} />
     return (
@@ -115,7 +127,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <BoardSummaryCards columns={columns} cards={cards} />
+      <BoardMetricChips columns={columns} cards={cards} assigneeIdsByCardId={assigneeIdsByCardId} />
       {(moveErrorMessage || cardTasks.loadErrorMessage || isAnyRealtimeDisconnected) && (
         <div className="flex flex-col gap-2 px-4 md:px-8 pt-4">
           {moveErrorMessage && (
@@ -152,6 +164,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
             columns={columns}
             cards={cards}
             clients={clients}
+            assigneeIdsByCardId={assigneeIdsByCardId}
             profilesById={profilesById}
             progressByCardId={cardTasks.progressByCardId}
             onMoveCard={moveCard}

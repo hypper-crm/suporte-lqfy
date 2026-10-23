@@ -7,13 +7,25 @@ import { UserIdentity } from './UserIdentity'
 type TopBarProps = {
   title: string
   displayName: string | null
+  avatarUrl: string | null
+  isProfileOpen: boolean
   isSigningOut: boolean
   onSignOut: () => void
   onOpenClients: () => void
+  onOpenProfile: () => void
 }
 
 // Below the md breakpoint only the title, the avatar and the sign out button are shown.
-export function TopBar({ title, displayName, isSigningOut, onSignOut, onOpenClients }: TopBarProps) {
+export function TopBar({
+  title,
+  displayName,
+  avatarUrl,
+  isProfileOpen,
+  isSigningOut,
+  onSignOut,
+  onOpenClients,
+  onOpenProfile,
+}: TopBarProps) {
   return (
     <header className="sticky top-0 z-sticky shrink-0 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur md:static md:bg-background md:backdrop-blur-none">
       <div className="flex h-14 items-center justify-between gap-3 px-4 md:h-16 md:px-8">
@@ -36,7 +48,7 @@ export function TopBar({ title, displayName, isSigningOut, onSignOut, onOpenClie
             <ConnectionStatusPill />
           </div>
           <div className="hidden h-6 w-px bg-border md:block" />
-          <UserIdentity displayName={displayName} />
+          <UserIdentity displayName={displayName} avatarUrl={avatarUrl} isProfileOpen={isProfileOpen} onOpenProfile={onOpenProfile} />
           <Button
             variant="ghost"
             size="icon"

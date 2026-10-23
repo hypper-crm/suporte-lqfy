@@ -9,12 +9,13 @@ import {
   type ClientFormErrors,
   type ClientFormValues,
 } from '../../lib/clientFormValidation'
-import type { ClientInput } from '../../types/client'
+import type { ClientCoverChange, ClientInput } from '../../types/client'
 import type { Client } from '../../types/database'
 import { Button } from '../ui/Button'
 import { Drawer } from '../ui/Drawer'
 import { FormField } from '../ui/FormField'
 import { StatusMessage } from '../ui/StatusMessage'
+import { ClientCoverField } from './ClientCoverField'
 import { DeleteClientConfirmation } from './DeleteClientConfirmation'
 
 // Lets the save button in the drawer header submit the form.
@@ -23,7 +24,7 @@ const clientFormId = 'client-form'
 type ClientFormDrawerProps = {
   // Null opens the form in create mode.
   client: Client | null
-  onSave: (input: ClientInput) => Promise<void>
+  onSave: (input: ClientInput, coverChange: ClientCoverChange) => Promise<void>
   // Only given in edit mode.
   onDelete?: () => Promise<void>
   onClose: () => void
@@ -31,6 +32,7 @@ type ClientFormDrawerProps = {
 
 export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFormDrawerProps) {
   const [values, setValues] = useState<ClientFormValues>(client ? toClientFormValues(client) : emptyClientFormValues)
+  const [coverChange, setCoverChange] = useState<ClientCoverChange>({ kind: 'keep' })
   const [fieldErrors, setFieldErrors] = useState<ClientFormErrors>({})
   const [isSaving, setIsSaving] = useState(false)
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null)
@@ -52,7 +54,7 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
     setIsSaving(true)
     setSaveErrorMessage(null)
     try {
-      await onSave(toClientInput(values))
+      await onSave(toClientInput(values), coverChange)
       onClose()
     } catch (error) {
       setSaveErrorMessage(error instanceof Error ? error.message : serviceErrors.clientSave)
@@ -103,6 +105,17 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
           onChange={(event) => updateValue('niche', event.target.value)}
         />
         <FormField
+          id="client-website"
+          label={clientStrings.form.website}
+          type="url"
+          inputMode="url"
+          placeholder={clientStrings.form.websitePlaceholder}
+          value={values.website}
+          disabled={isBusy}
+          errorMessage={fieldErrors.website}
+          onChange={(event) => updateValue('website', event.target.value)}
+        />
+        <FormField
           id="client-pay-in-rate"
           label={clientStrings.form.payInRate}
           inputMode="decimal"
@@ -121,6 +134,13 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
           disabled={isBusy}
           errorMessage={fieldErrors.payOutRate}
           onChange={(event) => updateValue('payOutRate', event.target.value)}
+        />
+
+        <ClientCoverField
+          savedCoverUrl={client?.cover_image_url ?? null}
+          coverChange={coverChange}
+          disabled={isBusy}
+          onChange={setCoverChange}
         />
 
         {saveErrorMessage && <StatusMessage variant="error">{saveErrorMessage}</StatusMessage>}

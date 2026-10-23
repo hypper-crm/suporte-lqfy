@@ -6,4 +6,5 @@ export const screenLabels: Record<AppScreen, string> = {
   implementation: screens.implementation,
   clients: screens.clients,
   stepSettings: screens.stepSettings,
+  profile: screens.profile,
 }

@@ -5,7 +5,7 @@ import type { Card, Profile } from '../types/database'
 import { AttachmentsSection } from './cardDetails/AttachmentsSection'
 import { CardDetailsForm, CardSaveButton } from './cardDetails/CardDetailsForm'
 import {
-  CardAssigneeField,
+  CardAssigneesField,
   CardClientField,
   CardDescriptionField,
   CardStartDateField,
@@ -42,7 +42,7 @@ function SupportCardContent({ profiles, currentUserId, ...drawerProps }: Support
         <CardDescriptionField form={form} />
         <CardStartDateField form={form} />
         <CardClientField form={form} clients={clients} />
-        <CardAssigneeField form={form} profiles={profiles} />
+        <CardAssigneesField form={form} profiles={profiles} />
       </CardDetailsForm>
       <AttachmentsSection cardId={card.id} currentUserId={currentUserId} />
       <DeleteCardSection cardTitle={card.title} onConfirm={deleteCard} />

@@ -1,5 +1,6 @@
 import { clients } from '../i18n/pt-BR'
 import { formatDecimal } from './formatting'
+import { isValidWebsite } from './website'
 import type { ClientInput } from '../types/client'
 import type { Client } from '../types/database'
 
@@ -9,6 +10,7 @@ export type ClientFormValues = {
   niche: string
   payInRate: string
   payOutRate: string
+  website: string
 }
 
 export type ClientFormErrors = Partial<Record<keyof ClientFormValues, string>>
@@ -22,7 +24,7 @@ const ratePattern = /^\d{1,3}([.,]\d{1,2})?$/
 
 const rateErrorMessage = clients.validation.rateInvalid
 
-export const emptyClientFormValues: ClientFormValues = { name: '', email: '', niche: '', payInRate: '', payOutRate: '' }
+export const emptyClientFormValues: ClientFormValues = { name: '', email: '', niche: '', payInRate: '', payOutRate: '', website: '' }
 
 export function toClientFormValues(client: Client): ClientFormValues {
   return {
@@ -31,6 +33,7 @@ export function toClientFormValues(client: Client): ClientFormValues {
     niche: client.niche ?? '',
     payInRate: client.pay_in_rate === null ? '' : formatDecimal(client.pay_in_rate),
     payOutRate: client.pay_out_rate === null ? '' : formatDecimal(client.pay_out_rate),
+    website: client.website ?? '',
   }
 }
 
@@ -66,6 +69,10 @@ export function validateClientForm(values: ClientFormValues): ClientFormErrors {
   const payOutRateError = validateRate(values.payOutRate)
   if (payOutRateError) errors.payOutRate = payOutRateError
 
+  if (values.website.trim() && !isValidWebsite(values.website.trim())) {
+    errors.website = clients.validation.websiteInvalid
+  }
+
   return errors
 }
 
@@ -77,5 +84,6 @@ export function toClientInput(values: ClientFormValues): ClientInput {
     niche: values.niche.trim() || null,
     payInRate: parseRate(values.payInRate),
     payOutRate: parseRate(values.payOutRate),
+    website: values.website.trim() || null,
   }
 }

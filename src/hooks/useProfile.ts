@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { header } from '../i18n/pt-BR'
-import { getProfileById } from '../services/profileService'
+import { getProfileById, uploadAvatar as uploadAvatarRequest } from '../services/profileService'
 import type { Profile } from '../types/database'
 
 export type ProfileState = {
@@ -8,6 +8,7 @@ export type ProfileState = {
   isLoading: boolean
   errorMessage: string | null
   reload: () => void
+  uploadAvatar: (file: File, mimeType: string, extension: string) => Promise<void>
 }
 
 export function useProfile(profileId: string | null): ProfileState {
@@ -47,5 +48,13 @@ export function useProfile(profileId: string | null): ProfileState {
 
   const reload = useCallback(() => setReloadCount((count) => count + 1), [])
 
-  return { profile, isLoading, errorMessage, reload }
+  const uploadAvatar = useCallback(
+    async (file: File, mimeType: string, extension: string) => {
+      if (!profileId) return
+      setProfile(await uploadAvatarRequest({ profileId, file, mimeType, extension }))
+    },
+    [profileId],
+  )
+
+  return { profile, isLoading, errorMessage, reload, uploadAvatar }
 }

@@ -28,6 +28,7 @@ export function ClientTableSkeleton() {
             <TableHeaderCell>{clients.columns.name}</TableHeaderCell>
             <TableHeaderCell>{clients.columns.email}</TableHeaderCell>
             <TableHeaderCell>{clients.columns.niche}</TableHeaderCell>
+            <TableHeaderCell>{clients.columns.website}</TableHeaderCell>
             <TableHeaderCell align="right">{clients.columns.payInRate}</TableHeaderCell>
             <TableHeaderCell align="right">{clients.columns.payOutRate}</TableHeaderCell>
           </tr>
@@ -43,6 +44,9 @@ export function ClientTableSkeleton() {
               </TableCell>
               <TableCell>
                 <Skeleton className="h-5 w-20 rounded-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-3.5 w-28" />
               </TableCell>
               <TableCell>
                 <Skeleton className="ml-auto h-3.5 w-14" />

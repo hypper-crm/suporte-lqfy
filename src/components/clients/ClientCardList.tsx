@@ -6,6 +6,8 @@ import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { stateTransition } from '../ui/motionPresets'
+import { ClientCoverThumbnail } from './ClientCoverThumbnail'
+import { ClientWebsiteLink } from './ClientWebsiteLink'
 
 type ClientCardListProps = {
   clients: Client[]
@@ -21,9 +23,12 @@ export function ClientCardList({ clients, onSelectClient }: ClientCardListProps)
           <motion.li key={client.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={stateTransition}>
             <Card className="flex flex-col gap-3 p-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 flex-col gap-0.5">
-                  <p className="truncate font-medium">{client.name}</p>
-                  <p className={`truncate text-sm ${client.email ? 'text-muted' : 'text-subtle'}`}>{client.email ?? common.emptyValue}</p>
+                <div className="flex min-w-0 items-center gap-3">
+                  <ClientCoverThumbnail coverImageUrl={client.cover_image_url} />
+                  <div className="flex min-w-0 flex-col gap-0.5">
+                    <p className="truncate font-medium">{client.name}</p>
+                    <p className={`truncate text-sm ${client.email ? 'text-muted' : 'text-subtle'}`}>{client.email ?? common.emptyValue}</p>
+                  </div>
                 </div>
                 <Button variant="ghost" size="small" onClick={() => onSelectClient(client.id)} aria-label={clientStrings.editLabel(client.name)}>
                   {common.edit}
@@ -34,6 +39,12 @@ export function ClientCardList({ clients, onSelectClient }: ClientCardListProps)
                   <dt className="section-label">{clientStrings.columns.niche}</dt>
                   <dd className="min-w-0">
                     {client.niche ? <Badge>{client.niche}</Badge> : <span className="text-sm text-subtle">{common.emptyValue}</span>}
+                  </dd>
+                </div>
+                <div className="col-span-2 flex min-w-0 flex-col gap-1">
+                  <dt className="section-label">{clientStrings.columns.website}</dt>
+                  <dd className="min-w-0 text-sm">
+                    <ClientWebsiteLink clientName={client.name} website={client.website} />
                   </dd>
                 </div>
                 <div className="flex min-w-0 flex-col gap-1">

@@ -26,7 +26,12 @@ function startOfCurrentWeek(now: Date): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday)
 }
 
-export function summarizeBoard(columns: BoardColumn[], cards: Card[], now = new Date()): BoardSummary {
+export function summarizeBoard(
+  columns: BoardColumn[],
+  cards: Card[],
+  assigneeIdsByCardId: Map<string, string[]>,
+  now = new Date(),
+): BoardSummary {
   const doneColumnIds = findDoneColumnIds(columns)
   const weekStartTime = startOfCurrentWeek(now).getTime()
   const openCards = cards.filter((card) => !doneColumnIds.has(card.column_id))
@@ -34,7 +39,7 @@ export function summarizeBoard(columns: BoardColumn[], cards: Card[], now = new 
 
   return {
     openCardCount: openCards.length,
-    unassignedOpenCardCount: openCards.filter((card) => !card.assignee_id).length,
+    unassignedOpenCardCount: openCards.filter((card) => !assigneeIdsByCardId.has(card.id)).length,
     doneThisWeekCount: doneCards.filter((card) => new Date(card.updated_at).getTime() >= weekStartTime).length,
   }
 }

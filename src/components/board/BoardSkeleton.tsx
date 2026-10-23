@@ -1,19 +1,14 @@
 import { boards } from '../../i18n/pt-BR'
-import { Card } from '../ui/Card'
 import { Skeleton } from '../ui/Skeleton'
 
 const placeholderColumnCardCounts = [3, 2, 4, 1]
 
 export function BoardSkeleton() {
   return (
-    <div role="status" aria-label={boards.loading} className="flex min-h-0 flex-1 flex-col gap-6">
-      <div className="grid grid-cols-1 gap-3 px-4 md:grid-cols-2 md:gap-4 md:px-8 lg:grid-cols-3">
+    <div role="status" aria-label={boards.loading} className="flex min-h-0 flex-1 flex-col gap-5 md:gap-6">
+      <div className="flex gap-2 overflow-hidden px-4 md:px-8">
         {[0, 1, 2].map((index) => (
-          <Card key={index} className="flex flex-col gap-4 p-5">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-7 w-16" />
-            <Skeleton className="h-3 w-32" />
-          </Card>
+          <Skeleton key={index} className="h-14 w-36 shrink-0 rounded-card" />
         ))}
       </div>
       <div className="flex gap-4 overflow-hidden px-4 md:px-8">

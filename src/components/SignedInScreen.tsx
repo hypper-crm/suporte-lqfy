@@ -11,6 +11,7 @@ import { ClientsScreen } from './clients/ClientsScreen'
 import { MobileTabBar } from './layout/MobileTabBar'
 import { Sidebar } from './layout/Sidebar'
 import { TopBar } from './layout/TopBar'
+import { ProfileScreen } from './profile/ProfileScreen'
 import { StepSettingsScreen } from './stepSettings/StepSettingsScreen'
 import { Button } from './ui/Button'
 import { StatusMessage } from './ui/StatusMessage'
@@ -23,7 +24,7 @@ export function SignedInScreen({ user, isSigningOut, signOutErrorMessage, signOu
   const [activeScreen, setActiveScreen] = useState<AppScreen>('support')
   // Reopened by the boards tab of the mobile tab bar.
   const [lastBoard, setLastBoard] = useState<Board>('support')
-  const { profile, errorMessage: profileErrorMessage, reload: reloadProfile } = useProfile(user.id)
+  const { profile, errorMessage: profileErrorMessage, reload: reloadProfile, uploadAvatar } = useProfile(user.id)
   const displayName = profile?.full_name || user.email || null
 
   function changeScreen(screen: AppScreen) {
@@ -40,9 +41,12 @@ export function SignedInScreen({ user, isSigningOut, signOutErrorMessage, signOu
           title={screenLabels[activeScreen]}
           // Without a profile there is no name to show, unless loading failed and the email is the fallback.
           displayName={profile || profileErrorMessage ? displayName : null}
+          avatarUrl={profile?.avatar_url ?? null}
+          isProfileOpen={activeScreen === 'profile'}
           isSigningOut={isSigningOut}
           onSignOut={() => void signOut()}
           onOpenClients={() => changeScreen('clients')}
+          onOpenProfile={() => changeScreen('profile')}
         />
         {(signOutErrorMessage || profileErrorMessage) && (
           <div className="flex flex-col gap-2 px-4 md:px-8 pt-4">
@@ -60,6 +64,7 @@ export function SignedInScreen({ user, isSigningOut, signOutErrorMessage, signOu
         <main className="flex flex-1 flex-col md:min-h-0">
           {activeScreen === 'clients' && <ClientsScreen />}
           {activeScreen === 'stepSettings' && <StepSettingsScreen />}
+          {activeScreen === 'profile' && <ProfileScreen profile={profile} email={user.email ?? null} onUploadAvatar={uploadAvatar} />}
           {(activeScreen === 'support' || activeScreen === 'implementation') && (
             <BoardPage board={activeScreen} currentUserId={user.id} onBoardChange={changeScreen} />
           )}

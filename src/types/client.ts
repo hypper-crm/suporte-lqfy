@@ -8,6 +8,10 @@ export type ClientInput = {
   niche: string | null
   payInRate: number | null
   payOutRate: number | null
+  website: string | null
 }
+
+// What happens to the cover image when a client is saved.
+export type ClientCoverChange = { kind: 'keep' } | { kind: 'replace'; file: File; mimeType: string } | { kind: 'remove' }
 
 export type ClientRealtimeHandlers = RealtimeHandlers<Client>

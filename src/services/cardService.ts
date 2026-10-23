@@ -3,11 +3,12 @@ import { supabase } from '../lib/supabase'
 import type { CardMove, CardRealtimeHandlers, CardUpdateInput, CreatedCard, NewCardInput } from '../types/board'
 import type { Board, Card, CardPriority, CardRequestType } from '../types/database'
 import { deleteAttachmentRecordsForCard, removeStorageObjects } from './attachmentService'
+import { deleteAssigneesForCard } from './cardAssigneeService'
 import { copyStepTemplatesToCard, deleteTasksForCard } from './cardTaskService'
 import { subscribeToTableChanges } from './realtimeChannel'
 
 const cardFields =
-  'id, board, column_id, title, description, client_id, assignee_id, start_date, position, priority, request_type, created_by, created_at, updated_at'
+  'id, board, column_id, title, description, client_id, start_date, position, priority, request_type, created_by, created_at, updated_at'
 
 function optionalString(value: unknown): string | null {
   return typeof value === 'string' ? value : null
@@ -29,7 +30,6 @@ function toCard(record: Record<string, unknown>): Card {
     title: String(record.title ?? ''),
     description: optionalString(record.description),
     client_id: optionalString(record.client_id),
-    assignee_id: optionalString(record.assignee_id),
     start_date: optionalString(record.start_date),
     position: Number(record.position),
     priority: optionalOption(record.priority, cardPriorities),
@@ -84,7 +84,7 @@ export async function moveCard(cardId: string, { columnId, position }: CardMove)
 
 export async function updateCard(
   cardId: string,
-  { title, description, startDate, clientId, assigneeId, priority, requestType }: CardUpdateInput,
+  { title, description, startDate, clientId, priority, requestType }: CardUpdateInput,
 ): Promise<Card> {
   const { data, error } = await supabase
     .from('cards')
@@ -93,7 +93,6 @@ export async function updateCard(
       description,
       start_date: startDate,
       client_id: clientId,
-      assignee_id: assigneeId,
       priority,
       request_type: requestType,
     })
@@ -105,9 +104,10 @@ export async function updateCard(
   return toCard(data)
 }
 
-// Removes the checklist and attachment rows first, then the card, then the stored files.
+// Removes the checklist, assignee and attachment rows first, then the card, then the stored files.
 export async function deleteCard(cardId: string): Promise<void> {
   await deleteTasksForCard(cardId)
+  await deleteAssigneesForCard(cardId)
   const storagePaths = await deleteAttachmentRecordsForCard(cardId)
 
   const { data, error } = await supabase.from('cards').delete().eq('id', cardId).select('id')

@@ -2,6 +2,8 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { AnimatePresence, motion } from 'motion/react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
+import { toAssigneePeople } from '../../lib/assignees'
+import type { ColumnStatus } from '../../types/board'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
 import { Badge } from '../ui/Badge'
 import { AddCardForm } from './AddCardForm'
@@ -12,7 +14,10 @@ type BoardColumnViewProps = {
   cards: Card[]
   clients: Client[]
   clientsById: Map<string, Client>
+  assigneeIdsByCardId: Map<string, string[]>
   profilesById: Record<string, Profile>
+  // Implementation board only.
+  columnStatus: ColumnStatus | undefined
   progressByCardId: Map<string, TaskProgress>
   presenceContext: CardPresenceContext
   onCreateCard: (columnId: string, title: string, clientId: string | null) => Promise<void>
@@ -24,7 +29,9 @@ export function BoardColumnView({
   cards,
   clients,
   clientsById,
+  assigneeIdsByCardId,
   profilesById,
+  columnStatus,
   progressByCardId,
   presenceContext,
   onCreateCard,
@@ -51,8 +58,9 @@ export function BoardColumnView({
                 key={card.id}
                 card={card}
                 client={card.client_id ? clientsById.get(card.client_id) : undefined}
-                assignee={card.assignee_id ? profilesById[card.assignee_id] : undefined}
+                assignees={toAssigneePeople(assigneeIdsByCardId.get(card.id), profilesById)}
                 taskProgress={progressByCardId.get(card.id)}
+                columnStatus={columnStatus}
                 presenceContext={presenceContext}
                 onOpen={onOpenCard}
               />

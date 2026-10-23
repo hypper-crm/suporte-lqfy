@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { serviceErrors } from '../i18n/pt-BR'
 import {
   areCardFormValuesEqual,
+  sortAssigneeIds,
+  toCardDetailsInput,
   toCardFormValues,
-  toCardUpdateInput,
   validateCardTitle,
   type CardFormField,
   type CardFormValues,
 } from '../lib/cardFormValues'
-import type { CardUpdateInput } from '../types/board'
+import type { CardDetailsInput, SavedCardDetails } from '../types/board'
 import type { Card } from '../types/database'
 
 export type CardDetailsFormState = {
@@ -24,10 +25,14 @@ export type CardDetailsFormState = {
   loadLatestVersion: () => void
 }
 
-// `card` is the live card from the board, kept up to date by realtime.
-export function useCardDetailsForm(card: Card, onSave: (input: CardUpdateInput) => Promise<Card>): CardDetailsFormState {
+// `card` and `assigneeIds` are live values from the board, kept up to date by realtime.
+export function useCardDetailsForm(
+  card: Card,
+  assigneeIds: string[],
+  onSave: (input: CardDetailsInput) => Promise<SavedCardDetails>,
+): CardDetailsFormState {
   // The saved values the current edits started from.
-  const [baseValues, setBaseValues] = useState(() => toCardFormValues(card))
+  const [baseValues, setBaseValues] = useState(() => toCardFormValues({ card, assigneeIds }))
   const [values, setValues] = useState(baseValues)
   const [titleErrorMessage, setTitleErrorMessage] = useState<string | undefined>(undefined)
   const [isSaving, setIsSaving] = useState(false)
@@ -35,7 +40,7 @@ export function useCardDetailsForm(card: Card, onSave: (input: CardUpdateInput) 
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null)
   const [hasRemoteChanges, setHasRemoteChanges] = useState(false)
 
-  const liveValues = useMemo(() => toCardFormValues(card), [card])
+  const liveValues = useMemo(() => toCardFormValues({ card, assigneeIds }), [card, assigneeIds])
   const isDirty = !areCardFormValuesEqual(values, baseValues)
 
   // Applies changes made elsewhere: silently when there are no unsaved edits, otherwise only flags them.
@@ -55,7 +60,8 @@ export function useCardDetailsForm(card: Card, onSave: (input: CardUpdateInput) 
   }, [liveValues, baseValues, values, isDirty, isSaving])
 
   const updateValue = useCallback(<Field extends CardFormField>(field: Field, value: CardFormValues[Field]) => {
-    setValues((current) => ({ ...current, [field]: value }))
+    const nextValue = field === 'assigneeIds' ? sortAssigneeIds(value as string[]) : value
+    setValues((current) => ({ ...current, [field]: nextValue }))
     setIsSaved(false)
     if (field === 'title') setTitleErrorMessage(undefined)
   }, [])
@@ -69,7 +75,7 @@ export function useCardDetailsForm(card: Card, onSave: (input: CardUpdateInput) 
     setIsSaved(false)
     setSaveErrorMessage(null)
     try {
-      const savedValues = toCardFormValues(await onSave(toCardUpdateInput(values)))
+      const savedValues = toCardFormValues(await onSave(toCardDetailsInput(values)))
       setBaseValues(savedValues)
       setValues(savedValues)
       setHasRemoteChanges(false)
