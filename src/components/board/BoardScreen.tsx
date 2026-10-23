@@ -119,7 +119,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
       {(moveErrorMessage || cardTasks.loadErrorMessage || isAnyRealtimeDisconnected) && (
         <div className="flex flex-col gap-2 px-4 md:px-8 pt-4">
           {moveErrorMessage && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusMessage variant="error">{moveErrorMessage}</StatusMessage>
               <Button variant="ghost" size="small" onClick={dismissMoveError}>
                 {common.dismiss}
@@ -127,7 +127,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
             </div>
           )}
           {cardTasks.loadErrorMessage && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusMessage variant="error">{cardTasks.loadErrorMessage}</StatusMessage>
               <Button variant="link" onClick={cardTasks.reload}>
                 {common.tryAgain}
@@ -135,7 +135,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
             </div>
           )}
           {isAnyRealtimeDisconnected && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusMessage variant="info">{boards.realtimePaused}</StatusMessage>
               <Button variant="link" onClick={reloadAll}>
                 {common.reload}

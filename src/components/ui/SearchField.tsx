@@ -11,7 +11,7 @@ export function SearchField({ className = '', ...inputProps }: SearchFieldProps)
       <Search aria-hidden="true" className="size-4 shrink-0 text-muted" />
       <input
         type="search"
-        className="h-full min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle"
+        className="h-full min-w-0 flex-1 bg-transparent text-base text-foreground md:text-sm outline-none placeholder:text-subtle"
         {...inputProps}
       />
     </div>

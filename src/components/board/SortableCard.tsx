@@ -52,7 +52,7 @@ export function SortableCard({ card, client, assignee, taskProgress, presenceCon
       <div
         ref={setNodeRef}
         style={{ transform: CSS.Transform.toString(transform), transition }}
-        className="touch-none rounded-card outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+        className="touch-manipulation rounded-card outline-none select-none [-webkit-touch-callout:none] focus-visible:ring-2 focus-visible:ring-accent/40"
         aria-label={boards.card.ariaLabel(card.title)}
         {...attributes}
         {...listeners}

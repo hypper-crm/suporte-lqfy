@@ -22,7 +22,8 @@ export function ChecklistTaskRow({ task, completedBy, dragHandleProps, onToggle,
   return (
     <div className="flex items-start gap-2 p-2">
       <DragHandle {...dragHandleProps} />
-      <span className="flex h-7 shrink-0 items-center">
+      {/* The label widens the tap area of the checkbox on touch screens. */}
+      <label className="flex size-11 shrink-0 items-center justify-center md:h-7 md:w-auto">
         <input
           type="checkbox"
           aria-label={checklist.toggleLabel(task.title)}
@@ -30,7 +31,7 @@ export function ChecklistTaskRow({ task, completedBy, dragHandleProps, onToggle,
           onChange={() => onToggle(task)}
           className="size-4 accent-accent outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
         />
-      </span>
+      </label>
       <div className="flex min-w-0 flex-1 flex-col">
         <InlineEditableText
           value={task.title}

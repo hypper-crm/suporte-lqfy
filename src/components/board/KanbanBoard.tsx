@@ -4,7 +4,8 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -18,6 +19,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
 import { groupCardIdsByColumn, positionBetween, type CardIdsByColumn } from '../../lib/cardPosition'
+import { mouseActivationConstraint, touchActivationConstraint } from '../../lib/dragSensors'
 import type { CardMove } from '../../types/board'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
 import { fluidEaseCss } from '../ui/motionPresets'
@@ -80,7 +82,8 @@ export function KanbanBoard({
   const isReducedMotion = useReducedMotion() ?? false
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: mouseActivationConstraint }),
+    useSensor(TouchSensor, { activationConstraint: touchActivationConstraint }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates, keyboardCodes: keyboardDragCodes }),
   )
 
@@ -161,7 +164,13 @@ export function KanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={resetDrag}
     >
-      <motion.div layoutScroll className="flex h-full items-start gap-4 overflow-x-auto px-4 md:px-8 pt-6 pb-6">
+      {/* Below the md breakpoint columns snap into place. Snapping pauses while dragging so auto-scroll can move freely. */}
+      <motion.div
+        layoutScroll
+        className={`flex items-start gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pt-5 pb-6 md:h-full md:gap-4 md:px-8 md:pt-6 ${
+          activeCardId ? '' : 'snap-x snap-mandatory md:snap-none'
+        }`}
+      >
         {columns.map((column) => (
           <BoardColumnView
             key={column.id}
@@ -177,7 +186,7 @@ export function KanbanBoard({
           />
         ))}
       </motion.div>
-      <DragOverlay dropAnimation={isReducedMotion ? null : dropAnimation}>
+      <DragOverlay dropAnimation={isReducedMotion ? null : dropAnimation} style={{ zIndex: 'var(--z-overlay)' }}>
         {activeCard && (
           <CardContent
             card={activeCard}

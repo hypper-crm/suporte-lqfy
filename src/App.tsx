@@ -20,7 +20,7 @@ export function App() {
     return (
       <>
         {errorMessage && (
-          <div className="fixed inset-x-0 top-4 flex justify-center">
+          <div className="fixed inset-x-0 top-[max(1rem,env(safe-area-inset-top))] z-toast flex justify-center px-4">
             <StatusMessage variant="error">{errorMessage}</StatusMessage>
           </div>
         )}

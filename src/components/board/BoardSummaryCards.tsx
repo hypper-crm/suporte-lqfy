@@ -14,7 +14,7 @@ export function BoardSummaryCards({ columns, cards }: BoardSummaryCardsProps) {
   const summary = useMemo(() => summarizeBoard(columns, cards), [columns, cards])
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 px-4 md:px-8">
+    <div className="grid grid-cols-1 gap-3 px-4 md:grid-cols-2 md:gap-4 md:px-8 lg:grid-cols-3">
       <StatCard label={boards.summary.openCards} value={summary.openCardCount} caption={boards.summary.openCardsCaption} icon={Layers} />
       <StatCard
         label={boards.summary.withoutAssignee}

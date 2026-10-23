@@ -10,7 +10,7 @@ type SidebarSection = {
   items: { screen: AppScreen; icon: LucideIcon }[]
 }
 
-export const sidebarSections: SidebarSection[] = [
+const sidebarSections: SidebarSection[] = [
   {
     label: screens.boardsSection,
     items: [

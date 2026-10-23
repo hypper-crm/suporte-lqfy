@@ -2,7 +2,8 @@ import type { ButtonHTMLAttributes } from 'react'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerGhost' | 'link'
 
-type ButtonSize = 'small' | 'medium' | 'icon'
+// Below the md breakpoint every size grows to a 44px touch target.
+type ButtonSize = 'compact' | 'small' | 'medium' | 'icon'
 
 const variantClassNames: Record<ButtonVariant, string> = {
   primary: 'bg-accent text-on-accent hover:bg-accent-strong',
@@ -14,9 +15,10 @@ const variantClassNames: Record<ButtonVariant, string> = {
 }
 
 const sizeClassNames: Record<ButtonSize, string> = {
-  small: 'h-8 px-3 text-xs',
-  medium: 'h-9 px-4 text-sm',
-  icon: 'h-8 w-8',
+  compact: 'h-11 px-2 text-xs md:h-7',
+  small: 'h-11 px-3 text-xs md:h-8',
+  medium: 'h-11 px-4 text-sm md:h-9',
+  icon: 'size-11 md:size-8',
 }
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -25,7 +27,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 export function Button({ variant = 'secondary', size = 'medium', type = 'button', className = '', ...buttonProps }: ButtonProps) {
-  const sizeClassName = variant === 'link' ? 'h-auto px-0 text-sm' : sizeClassNames[size]
+  const sizeClassName = variant === 'link' ? 'h-auto min-h-11 px-0 text-sm md:min-h-0' : sizeClassNames[size]
   return (
     <button
       type={type}

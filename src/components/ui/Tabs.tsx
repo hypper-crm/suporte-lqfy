@@ -42,7 +42,7 @@ export function Tabs<Value extends string>({
             aria-selected={isSelected}
             disabled={isDisabled}
             onClick={() => onChange(option.value)}
-            className={`relative h-8 rounded-full px-4 text-sm font-medium outline-none transition-colors duration-200 ease-fluid focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-60 ${
+            className={`relative h-11 rounded-full px-4 whitespace-nowrap md:h-8 text-sm font-medium outline-none transition-colors duration-200 ease-fluid focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-60 ${
               isSelected ? 'text-on-accent' : 'text-muted hover:text-foreground'
             }`}
           >

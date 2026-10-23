@@ -35,16 +35,16 @@ export function BoardColumnView({
 
   return (
     <section
-      className={`flex max-h-full w-72 shrink-0 flex-col rounded-card border transition-colors duration-200 ease-fluid ${
+      className={`flex w-[85vw] shrink-0 snap-start flex-col rounded-card border transition-colors md:max-h-full md:w-72 duration-200 ease-fluid ${
         isOver ? 'border-accent/40 bg-accent/[0.03]' : 'border-border bg-surface/60'
       }`}
     >
       <header className="flex items-center justify-between gap-2 px-3.5 pt-3.5 pb-3">
-        <h2 className="truncate text-[13px] font-medium">{column.name}</h2>
+        <h2 className="min-w-0 truncate text-sm font-medium md:text-[13px]">{column.name}</h2>
         <Badge>{cards.length}</Badge>
       </header>
       <SortableContext id={column.id} items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
-        <motion.ul ref={setNodeRef} layoutScroll className="flex min-h-12 flex-col overflow-y-auto px-2 pt-0.5">
+        <motion.ul ref={setNodeRef} layoutScroll className="flex min-h-12 flex-col px-2 pt-0.5 md:overflow-y-auto">
           <AnimatePresence initial={false} custom={presenceContext}>
             {cards.map((card) => (
               <SortableCard

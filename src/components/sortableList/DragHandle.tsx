@@ -15,7 +15,7 @@ export function DragHandle({ attributes, listeners, isDisabled = false }: DragHa
       aria-label={common.dragToReorder}
       title={common.dragToReorder}
       disabled={isDisabled}
-      className="flex size-7 shrink-0 touch-none items-center justify-center rounded-md text-subtle outline-none transition-colors duration-200 ease-fluid hover:bg-hover hover:text-muted focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-40"
+      className="flex size-11 shrink-0 touch-none md:size-7 items-center justify-center rounded-md text-subtle outline-none transition-colors duration-200 ease-fluid hover:bg-hover hover:text-muted focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-40"
     >
       <GripVertical aria-hidden="true" className="size-4" />
     </button>

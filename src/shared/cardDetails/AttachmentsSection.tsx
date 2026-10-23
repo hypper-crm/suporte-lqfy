@@ -58,7 +58,7 @@ export function AttachmentsSection({ cardId, currentUserId }: AttachmentsSection
       <AttachmentDropZone onFilesSelected={uploadFiles} />
       <AttachmentUploadList uploads={uploads} onDismiss={dismissUpload} />
       {isRealtimeDisconnected && (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <StatusMessage variant="info">{attachmentStrings.realtimePaused}</StatusMessage>
           <Button variant="link" onClick={reload}>
             {common.reload}

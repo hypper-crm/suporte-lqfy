@@ -5,7 +5,7 @@ import { useCardDrawer, type CardDrawerProps } from '../hooks/useCardDrawer'
 import { cardDetails } from '../i18n/pt-BR'
 import type { Card, CardTask, Profile } from '../types/database'
 import { AttachmentsSection } from './cardDetails/AttachmentsSection'
-import { CardDetailsForm } from './cardDetails/CardDetailsForm'
+import { CardDetailsForm, CardSaveButton } from './cardDetails/CardDetailsForm'
 import {
   CardAssigneeField,
   CardClientField,
@@ -40,7 +40,12 @@ function ImplementationCardContent({
   const { form, linkedClient, requestClose, deleteCard } = useCardDrawer(drawerProps)
 
   return (
-    <Drawer title={cardDetails.title} description={card.title} onClose={requestClose}>
+    <Drawer
+      title={cardDetails.title}
+      description={card.title}
+      onClose={requestClose}
+      headerAction={<CardSaveButton form={form} />}
+    >
       <ClientInfoPanel client={linkedClient} />
       <CardDetailsForm form={form}>
         <CardTitleField form={form} />

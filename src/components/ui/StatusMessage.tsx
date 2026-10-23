@@ -22,7 +22,7 @@ export function StatusMessage({ variant, children }: StatusMessageProps) {
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={stateTransition}
-      className={`rounded-card border px-3 py-2 text-sm ${variantClassNames[variant]}`}
+      className={`rounded-card border px-3 py-2 text-sm break-words ${variantClassNames[variant]}`}
     >
       {children}
     </motion.p>

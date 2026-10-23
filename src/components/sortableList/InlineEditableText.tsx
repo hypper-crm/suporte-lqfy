@@ -72,7 +72,7 @@ export function InlineEditableText({
         type="button"
         aria-label={renameLabel}
         onClick={() => setDraft(value)}
-        className={`min-w-0 flex-1 rounded-md px-1.5 py-1 text-left text-sm break-words outline-none transition-colors duration-200 ease-fluid hover:bg-hover focus-visible:ring-2 focus-visible:ring-accent/40 ${textClassName}`}
+        className={`min-w-0 flex-1 min-h-11 rounded-md px-1.5 py-1 text-left md:min-h-0 text-sm break-words outline-none transition-colors duration-200 ease-fluid hover:bg-hover focus-visible:ring-2 focus-visible:ring-accent/40 ${textClassName}`}
       >
         {value}
       </button>
@@ -88,7 +88,7 @@ export function InlineEditableText({
         value={draft}
         disabled={isSaving}
         hasError={errorMessage !== null}
-        className="h-8"
+        fieldHeight="compact"
         onChange={(event) => {
           setDraft(event.target.value)
           setErrorMessage(null)

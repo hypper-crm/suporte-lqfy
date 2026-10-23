@@ -50,7 +50,7 @@ export function AddItemInput({ label, placeholder, emptyErrorMessage, maximumLen
   return (
     <div className="flex flex-col gap-1">
       <div
-        className={`flex h-10 items-center gap-2 rounded-card border border-dashed bg-background/40 px-3 transition-[border-color,box-shadow] duration-200 ease-fluid focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/15 ${
+        className={`flex h-11 items-center gap-2 rounded-card border border-dashed md:h-10 bg-background/40 px-3 transition-[border-color,box-shadow] duration-200 ease-fluid focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/15 ${
           errorMessage ? 'border-danger/70' : 'border-border-strong hover:border-muted/50'
         }`}
       >
@@ -61,7 +61,7 @@ export function AddItemInput({ label, placeholder, emptyErrorMessage, maximumLen
           maxLength={maximumLength}
           value={title}
           readOnly={isAdding}
-          className="h-full min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-subtle"
+          className="h-full min-w-0 flex-1 bg-transparent text-base text-foreground md:text-sm outline-none placeholder:text-subtle"
           onChange={(event) => {
             setTitle(event.target.value)
             setErrorMessage(null)

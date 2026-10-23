@@ -52,7 +52,7 @@ export function ImageViewer({ attachment, onClose }: ImageViewerProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={overlayTransition}
-      className="fixed inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/85 p-6 backdrop-blur-sm"
+      className="fixed inset-0 z-overlay flex flex-col items-center justify-center gap-3 bg-black/85 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm md:p-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}

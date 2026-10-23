@@ -10,6 +10,7 @@ import { Card } from '../ui/Card'
 import { Drawer } from '../ui/Drawer'
 import { SearchField } from '../ui/SearchField'
 import { StatusMessage } from '../ui/StatusMessage'
+import { ClientCardList } from './ClientCardList'
 import { ClientFormDrawer } from './ClientFormDrawer'
 import { ClientTable } from './ClientTable'
 import { ClientTableSkeleton } from './ClientTableSkeleton'
@@ -99,11 +100,21 @@ export function ClientsScreen() {
 
     if (visibleClients.length === 0) return <EmptyState message={clientStrings.noMatches(searchText.trim())} />
 
-    return <ClientTable clients={visibleClients} onSelectClient={(clientId) => setFormState({ mode: 'edit', clientId })} />
+    const selectClient = (clientId: string) => setFormState({ mode: 'edit', clientId })
+    return (
+      <>
+        <div className="md:hidden">
+          <ClientCardList clients={visibleClients} onSelectClient={selectClient} />
+        </div>
+        <div className="max-md:hidden">
+          <ClientTable clients={visibleClients} onSelectClient={selectClient} />
+        </div>
+      </>
+    )
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div className="flex flex-1 flex-col md:min-h-0 md:overflow-y-auto">
       <PageHeader
         title={clientStrings.title}
         description={clientStrings.description}
@@ -122,7 +133,7 @@ export function ClientsScreen() {
           onChange={(event) => setSearchText(event.target.value)}
         />
         {isRealtimeDisconnected && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <StatusMessage variant="info">{clientStrings.realtimePaused}</StatusMessage>
             <Button variant="link" onClick={reload}>
               {common.reload}

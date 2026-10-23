@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 
 const baseFieldClassName =
-  'w-full rounded-card border bg-background/60 px-3 text-sm text-foreground outline-none placeholder:text-subtle transition-[border-color,box-shadow,background-color] duration-200 ease-fluid hover:border-border-strong focus:ring-2 disabled:opacity-50'
+  'w-full rounded-card border bg-background/60 px-3 text-base text-foreground md:text-sm outline-none placeholder:text-subtle transition-[border-color,box-shadow,background-color] duration-200 ease-fluid hover:border-border-strong focus:ring-2 disabled:opacity-50'
 
 function fieldClassName(hasError: boolean, className: string): string {
   const stateClassName = hasError
@@ -14,8 +14,21 @@ type FieldStateProps = {
   hasError?: boolean
 }
 
-export function Input({ hasError = false, className = '', ...inputProps }: InputHTMLAttributes<HTMLInputElement> & FieldStateProps) {
-  return <input className={fieldClassName(hasError, `h-10 ${className}`)} {...inputProps} />
+type InputHeight = 'medium' | 'compact'
+
+// Below the md breakpoint inputs are 44px tall.
+const inputHeightClassNames: Record<InputHeight, string> = {
+  medium: 'h-11 md:h-10',
+  compact: 'h-11 md:h-8',
+}
+
+type InputProps = InputHTMLAttributes<HTMLInputElement> &
+  FieldStateProps & {
+    fieldHeight?: InputHeight
+  }
+
+export function Input({ hasError = false, fieldHeight = 'medium', className = '', ...inputProps }: InputProps) {
+  return <input className={fieldClassName(hasError, `${inputHeightClassNames[fieldHeight]} ${className}`)} {...inputProps} />
 }
 
 export function Textarea({
@@ -27,5 +40,5 @@ export function Textarea({
 }
 
 export function Select({ hasError = false, className = '', ...selectProps }: SelectHTMLAttributes<HTMLSelectElement> & FieldStateProps) {
-  return <select className={fieldClassName(hasError, `select-chevron h-10 ${className}`)} {...selectProps} />
+  return <select className={fieldClassName(hasError, `select-chevron h-11 md:h-10 ${className}`)} {...selectProps} />
 }

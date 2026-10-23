@@ -71,11 +71,11 @@ export function StepSettingsScreen() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div className="flex flex-1 flex-col md:min-h-0 md:overflow-y-auto">
       <PageHeader title={stepSettings.title} description={stepSettings.description} />
       <div className="flex max-w-2xl flex-col gap-4 px-4 pb-8 md:px-8">
         {moveErrorMessage && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <StatusMessage variant="error">{moveErrorMessage}</StatusMessage>
             <Button variant="ghost" size="small" onClick={dismissMoveError}>
               {common.dismiss}
@@ -83,7 +83,7 @@ export function StepSettingsScreen() {
           </div>
         )}
         {isRealtimeDisconnected && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <StatusMessage variant="info">{stepSettings.realtimePaused}</StatusMessage>
             <Button variant="link" onClick={reload}>
               {common.reload}

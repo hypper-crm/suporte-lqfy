@@ -50,6 +50,18 @@
 @layer base {
   :root {
     color-scheme: dark;
+
+    /* The only z-index scale in the app. Use the z-* utilities below. */
+    --z-base: 0;
+    --z-raised: 10;
+    --z-sticky: 20;
+    --z-bar: 30;
+    --z-drawer: 40;
+    --z-overlay: 50;
+    --z-toast: 60;
+
+    /* Height of the mobile bottom tab bar, without the safe area. */
+    --mobile-tab-bar-height: 4rem;
   }
 
   html,
@@ -87,6 +99,39 @@
     scrollbar-color: var(--color-border-strong) transparent;
     scrollbar-width: thin;
   }
+}
+
+@utility z-base {
+  z-index: var(--z-base);
+}
+
+@utility z-raised {
+  z-index: var(--z-raised);
+}
+
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+
+@utility z-bar {
+  z-index: var(--z-bar);
+}
+
+@utility z-drawer {
+  z-index: var(--z-drawer);
+}
+
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+
+/* Keeps page content clear of the fixed mobile tab bar. */
+@utility pb-mobile-tab-bar {
+  padding-bottom: calc(var(--mobile-tab-bar-height) + env(safe-area-inset-bottom));
 }
 
 /* Section labels and table headers. */

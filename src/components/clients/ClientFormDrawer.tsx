@@ -17,6 +17,9 @@ import { FormField } from '../ui/FormField'
 import { StatusMessage } from '../ui/StatusMessage'
 import { DeleteClientConfirmation } from './DeleteClientConfirmation'
 
+// Lets the save button in the drawer header submit the form.
+const clientFormId = 'client-form'
+
 type ClientFormDrawerProps = {
   // Null opens the form in create mode.
   client: Client | null
@@ -58,14 +61,20 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
   }
 
   const isBusy = isSaving || isConfirmingDelete
+  const submitLabel = isSaving ? common.saving : isEditMode ? clientStrings.form.saveChanges : clientStrings.form.create
 
   return (
     <Drawer
       title={isEditMode ? clientStrings.form.editTitle : clientStrings.form.createTitle}
       description={isEditMode ? client.name : clientStrings.form.createDescription}
       onClose={onClose}
+      headerAction={
+        <Button type="submit" form={clientFormId} variant="primary" disabled={isBusy}>
+          {isSaving ? common.saving : common.save}
+        </Button>
+      }
     >
-      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form id={clientFormId} noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
         <FormField
           id="client-name"
           label={clientStrings.form.name}
@@ -120,9 +129,10 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
           <DeleteClientConfirmation clientName={client.name} onConfirm={onDelete} onCancel={() => setIsConfirmingDelete(false)} />
         ) : (
           <div className="flex items-center justify-between gap-2 pt-2">
-            <div className="flex gap-2">
+            {/* Below the md breakpoint the save and close buttons sit in the drawer header. */}
+            <div className="flex gap-2 max-md:hidden">
               <Button type="submit" variant="primary" disabled={isBusy}>
-                {isSaving ? common.saving : isEditMode ? clientStrings.form.saveChanges : clientStrings.form.create}
+                {submitLabel}
               </Button>
               <Button variant="ghost" onClick={onClose} disabled={isSaving}>
                 {common.cancel}

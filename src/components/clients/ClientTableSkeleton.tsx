@@ -1,4 +1,5 @@
 import { clients } from '../../i18n/pt-BR'
+import { Card } from '../ui/Card'
 import { Skeleton } from '../ui/Skeleton'
 import { Table, TableCell, TableHeaderCell } from '../ui/Table'
 
@@ -7,7 +8,21 @@ const placeholderRowCount = 6
 export function ClientTableSkeleton() {
   return (
     <div role="status" aria-label={clients.loading}>
-      <Table>
+      {/* Mirrors the client cards shown below the md breakpoint. */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {Array.from({ length: placeholderRowCount }, (_, index) => (
+          <Card key={index} className="flex flex-col gap-3 p-4">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-3.5 w-44" />
+            <div className="grid grid-cols-2 gap-4 border-t border-border pt-3">
+              <Skeleton className="h-3.5 w-20" />
+              <Skeleton className="h-3.5 w-20" />
+            </div>
+          </Card>
+        ))}
+      </div>
+      <div className="max-md:hidden">
+        <Table>
         <thead>
           <tr>
             <TableHeaderCell>{clients.columns.name}</TableHeaderCell>
@@ -38,7 +53,8 @@ export function ClientTableSkeleton() {
             </tr>
           ))}
         </tbody>
-      </Table>
+        </Table>
+      </div>
     </div>
   )
 }

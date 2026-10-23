@@ -18,7 +18,7 @@ export function StepTemplateRow({ stepTemplate, stepNumber, dragHandleProps, onR
   return (
     <div className="flex items-start gap-2 p-2">
       <DragHandle {...dragHandleProps} />
-      <span className="flex h-7 min-w-6 items-center justify-center text-xs font-medium text-subtle">{stepNumber}</span>
+      <span className="flex h-11 min-w-6 items-center justify-center text-xs font-medium text-subtle md:h-7">{stepNumber}</span>
       <InlineEditableText
         value={stepTemplate.title}
         renameLabel={stepSettings.renameLabel(stepTemplate.title)}

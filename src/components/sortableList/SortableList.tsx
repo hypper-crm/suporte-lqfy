@@ -2,7 +2,8 @@ import {
   closestCenter,
   DndContext,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -10,6 +11,7 @@ import {
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { ReactNode } from 'react'
 import { positionBetween } from '../../lib/cardPosition'
+import { mouseActivationConstraint, touchActivationConstraint } from '../../lib/dragSensors'
 import { SortableListItem, type DragHandleProps } from './SortableListItem'
 
 type SortableListProps<Item extends { id: string; position: number }> = {
@@ -28,7 +30,8 @@ export function SortableList<Item extends { id: string; position: number }>({
   renderItem,
 }: SortableListProps<Item>) {
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: mouseActivationConstraint }),
+    useSensor(TouchSensor, { activationConstraint: touchActivationConstraint }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 

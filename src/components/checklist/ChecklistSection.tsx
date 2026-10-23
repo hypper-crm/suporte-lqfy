@@ -90,7 +90,7 @@ export function ChecklistSection({ cardId, tasks, profilesById, status, actions 
     <section className="flex flex-col gap-3">
       <h3 className="section-label">{checklist.title}</h3>
       {status.updateErrorMessage && (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <StatusMessage variant="error">{status.updateErrorMessage}</StatusMessage>
           <Button variant="ghost" size="small" onClick={status.dismissUpdateError}>
             {common.dismiss}
@@ -98,7 +98,7 @@ export function ChecklistSection({ cardId, tasks, profilesById, status, actions 
         </div>
       )}
       {status.isRealtimeDisconnected && (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <StatusMessage variant="info">{checklist.realtimePaused}</StatusMessage>
           <Button variant="link" onClick={status.reload}>
             {common.reload}

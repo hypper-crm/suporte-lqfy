@@ -7,7 +7,7 @@ import { AuthForm } from './AuthForm'
 
 export function LoginScreen() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
+    <main className="flex min-h-dvh items-center justify-center bg-background px-4 py-6 md:p-6 text-foreground">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}

@@ -34,7 +34,7 @@ export function ConfirmDeleteButton({ label, confirmationText, note, onConfirm }
         aria-label={label}
         title={label}
         onClick={() => setIsConfirming(true)}
-        className="flex size-7 shrink-0 items-center justify-center rounded-md text-subtle outline-none transition-colors duration-200 ease-fluid hover:bg-danger/10 hover:text-danger focus-visible:ring-2 focus-visible:ring-accent/40"
+        className="flex size-11 shrink-0 items-center md:size-7 justify-center rounded-md text-subtle outline-none transition-colors duration-200 ease-fluid hover:bg-danger/10 hover:text-danger focus-visible:ring-2 focus-visible:ring-accent/40"
       >
         <Trash2 aria-hidden="true" className="size-3.5" />
       </button>
@@ -45,18 +45,17 @@ export function ConfirmDeleteButton({ label, confirmationText, note, onConfirm }
     <div className="flex flex-col items-end gap-1 text-xs">
       <div className="flex flex-wrap items-center justify-end gap-1">
         <span className="pr-1 text-danger">{confirmationText}</span>
-        <Button variant="dangerGhost" size="small" onClick={() => void confirm()} disabled={isDeleting} className="h-7 px-2">
+        <Button variant="dangerGhost" size="compact" onClick={() => void confirm()} disabled={isDeleting}>
           {isDeleting ? common.deleting : common.yesDelete}
         </Button>
         <Button
           variant="ghost"
-          size="small"
+          size="compact"
           onClick={() => {
             setIsConfirming(false)
             setErrorMessage(null)
           }}
           disabled={isDeleting}
-          className="h-7 px-2"
         >
           {common.cancel}
         </Button>

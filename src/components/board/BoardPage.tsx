@@ -22,7 +22,19 @@ export function BoardPage({ board, currentUserId, onBoardChange }: BoardPageProp
       <PageHeader
         title={boards.titles[board]}
         description={boards.descriptions[board]}
-        actions={<Tabs options={boardOptions} value={board} layoutId="board-tab-indicator" ariaLabel={boards.boardTabsLabel} onChange={onBoardChange} />}
+        actions={
+          // The only board selector below the md breakpoint, so it spans the full width there.
+          <div className="w-full md:w-auto">
+            <Tabs
+              options={boardOptions}
+              value={board}
+              layoutId="board-tab-indicator"
+              ariaLabel={boards.boardTabsLabel}
+              isFullWidth
+              onChange={onBoardChange}
+            />
+          </div>
+        }
       />
       {/* The key remounts the board so each board loads its own data and subscriptions. */}
       <BoardScreen key={board} board={board} currentUserId={currentUserId} />

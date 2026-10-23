@@ -39,6 +39,10 @@ export const screens = {
   stepSettings: 'Etapas de implantação',
   navigationLabel: 'Telas',
   boardsSection: 'Quadros',
+  // Short labels for the mobile bottom tab bar.
+  boardsTab: 'Quadros',
+  clientsTab: 'Clientes',
+  stepSettingsTab: 'Etapas',
   directorySection: 'Cadastros',
   settingsSection: 'Configurações',
 }

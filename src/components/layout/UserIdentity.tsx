@@ -12,7 +12,7 @@ export function UserIdentity({ displayName }: UserIdentityProps) {
     return (
       <div className="flex items-center gap-2.5">
         <Skeleton className="size-8 rounded-full" />
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 max-md:hidden">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-2.5 w-16" />
         </div>
@@ -22,8 +22,9 @@ export function UserIdentity({ displayName }: UserIdentityProps) {
 
   return (
     <div className="flex items-center gap-2.5">
-      <Avatar fullName={displayName} />
-      <div className="flex flex-col leading-tight">
+      <Avatar fullName={displayName} title={displayName} />
+      {/* Below the md breakpoint only the avatar is shown. */}
+      <div className="flex flex-col leading-tight max-md:hidden">
         <span className="max-w-40 truncate text-sm font-medium">{displayName}</span>
         <span className="text-[11px] text-muted">{header.teamMember}</span>
       </div>
