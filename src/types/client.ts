@@ -1,10 +1,17 @@
 import type { RealtimeHandlers } from './board'
-import type { Client } from './database'
+import type { ClientEmail, ClientRow } from './database'
 
-// Values written to the `clients` table when creating or editing a client.
+// An email of the client form. The id is null for an email that was not saved yet.
+export type ClientEmailInput = {
+  id: string | null
+  email: string
+}
+
+// Values written to the `clients` and `client_emails` tables when creating or editing a client.
 export type ClientInput = {
   name: string
-  email: string | null
+  // In display order, saved as `position`.
+  emails: ClientEmailInput[]
   niche: string | null
   payInRate: number | null
   payOutRate: number | null
@@ -14,4 +21,7 @@ export type ClientInput = {
 // What happens to the cover image when a client is saved.
 export type ClientCoverChange = { kind: 'keep' } | { kind: 'replace'; file: File; mimeType: string } | { kind: 'remove' }
 
-export type ClientRealtimeHandlers = RealtimeHandlers<Client>
+// Realtime rows of `clients` arrive without their emails.
+export type ClientRealtimeHandlers = RealtimeHandlers<ClientRow>
+
+export type ClientEmailRealtimeHandlers = RealtimeHandlers<ClientEmail>

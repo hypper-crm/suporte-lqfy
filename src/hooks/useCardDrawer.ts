@@ -29,7 +29,12 @@ export type CardDrawerState = {
 // Behavior shared by the support and implementation card drawers.
 export function useCardDrawer({ card, assigneeIds, clients, onSave, onUpdateCover, onDelete, onClose }: CardDrawerProps): CardDrawerState {
   const saveCard = useCallback((input: CardDetailsInput) => onSave(card.id, input), [card.id, onSave])
-  const form = useCardDetailsForm(card, assigneeIds, saveCard)
+  // An implementation card without a title is saved with its client's name.
+  const getFallbackTitle = useCallback(
+    (clientId: string) => (card.board === 'implementation' ? clients.find((client) => client.id === clientId)?.name : undefined),
+    [card.board, clients],
+  )
+  const form = useCardDetailsForm(card, assigneeIds, saveCard, getFallbackTitle)
   const linkedClient = card.client_id ? clients.find((client) => client.id === card.client_id) : undefined
 
   const requestClose = useCallback(() => {

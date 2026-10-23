@@ -20,7 +20,8 @@ type FormState = { mode: 'closed' } | { mode: 'create' } | { mode: 'edit'; clien
 function matchesSearch(client: Client, normalizedSearch: string): boolean {
   if (!normalizedSearch) return true
   return (
-    client.name.toLowerCase().includes(normalizedSearch) || (client.email ?? '').toLowerCase().includes(normalizedSearch)
+    client.name.toLowerCase().includes(normalizedSearch) ||
+    client.emails.some((email) => email.email.toLowerCase().includes(normalizedSearch))
   )
 }
 

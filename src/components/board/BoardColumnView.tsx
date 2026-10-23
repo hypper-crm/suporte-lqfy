@@ -5,9 +5,11 @@ import type { TaskProgress } from '../../hooks/useCardTasks'
 import { toAssigneePeople } from '../../lib/assignees'
 import type { CardCoverImage } from '../../lib/cardCover'
 import type { ColumnStatus } from '../../types/board'
+import type { ClientCoverChange, ClientInput } from '../../types/client'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
 import { Badge } from '../ui/Badge'
 import { AddCardForm } from './AddCardForm'
+import { AddImplementationCardForm } from './AddImplementationCardForm'
 import { SortableCard, type CardPresenceContext } from './SortableCard'
 
 type BoardColumnViewProps = {
@@ -24,6 +26,7 @@ type BoardColumnViewProps = {
   coversByCardId: Map<string, CardCoverImage>
   presenceContext: CardPresenceContext
   onCreateCard: (columnId: string, title: string, clientId: string | null) => Promise<void>
+  onCreateClient: (input: ClientInput, coverChange: ClientCoverChange) => Promise<Client>
   onOpenCard: (cardId: string) => void
 }
 
@@ -40,6 +43,7 @@ export function BoardColumnView({
   coversByCardId,
   presenceContext,
   onCreateCard,
+  onCreateClient,
   onOpenCard,
 }: BoardColumnViewProps) {
   // The column itself is a drop target so cards can be dropped into an empty column.
@@ -76,7 +80,15 @@ export function BoardColumnView({
         </motion.ul>
       </SortableContext>
       <div className="px-2 pb-2">
-        <AddCardForm clients={clients} onCreate={(title, clientId) => onCreateCard(column.id, title, clientId)} />
+        {column.board === 'implementation' ? (
+          <AddImplementationCardForm
+            clients={clients}
+            onCreate={(title, clientId) => onCreateCard(column.id, title, clientId)}
+            onCreateClient={onCreateClient}
+          />
+        ) : (
+          <AddCardForm clients={clients} onCreate={(title, clientId) => onCreateCard(column.id, title, clientId)} />
+        )}
       </div>
     </section>
   )

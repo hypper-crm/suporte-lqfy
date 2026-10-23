@@ -8,6 +8,7 @@ import { useTeamSettings } from '../../hooks/useTeamSettings'
 import { boards, common } from '../../i18n/pt-BR'
 import { getOverdueDayCounts } from '../../lib/boardSummary'
 import { resolveCardCover, type CardCoverImage } from '../../lib/cardCover'
+import { getColumnStatuses } from '../../lib/columnStatus'
 import { ImplementationCardDrawer } from '../../shared/ImplementationCardDrawer'
 import { SupportCardDrawer } from '../../shared/SupportCardDrawer'
 import type { Board } from '../../types/database'
@@ -50,6 +51,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
     loadErrorMessage: clientsErrorMessage,
     isRealtimeDisconnected: isClientsRealtimeDisconnected,
     reload: reloadClients,
+    createClient,
   } = useClients()
   // Only implementation cards have checklists.
   const cardTasks = useCardTasks(board === 'implementation', currentUserId)
@@ -68,6 +70,12 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
   const overdueDayCounts = useMemo(
     () => getOverdueDayCounts(columns, cards, teamSettings.overdueAfterDays),
     [columns, cards, teamSettings.overdueAfterDays],
+  )
+
+  // Only implementation cards show the column as a status badge.
+  const columnStatuses = useMemo(
+    () => (board === 'implementation' ? getColumnStatuses(columns) : undefined),
+    [board, columns],
   )
 
   const coversByCardId = useMemo(() => {
@@ -150,6 +158,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
         tasks={cardTasks.tasksByCardId.get(selectedCardId) ?? noTasks}
         checklistStatus={cardTasks}
         checklistActions={cardTasks}
+        columnStatus={selectedCard ? columnStatuses?.get(selectedCard.column_id) : undefined}
       />
     )
   }
@@ -208,6 +217,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
             coversByCardId={coversByCardId}
             onMoveCard={moveCard}
             onCreateCard={createCardWithChecklist}
+            onCreateClient={createClient}
             onOpenCard={setSelectedCardId}
           />
         </div>

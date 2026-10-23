@@ -6,8 +6,10 @@ import {
   toClientFormValues,
   toClientInput,
   validateClientForm,
+  type ClientEmailFormRow,
   type ClientFormErrors,
   type ClientFormValues,
+  type ClientTextField,
 } from '../../lib/clientFormValidation'
 import type { ClientCoverChange, ClientInput } from '../../types/client'
 import type { Client } from '../../types/database'
@@ -16,6 +18,7 @@ import { Drawer } from '../ui/Drawer'
 import { FormField } from '../ui/FormField'
 import { StatusMessage } from '../ui/StatusMessage'
 import { ClientCoverField } from './ClientCoverField'
+import { ClientEmailsField } from './ClientEmailsField'
 import { DeleteClientConfirmation } from './DeleteClientConfirmation'
 
 // Lets the save button in the drawer header submit the form.
@@ -24,7 +27,7 @@ const clientFormId = 'client-form'
 type ClientFormDrawerProps = {
   // Null opens the form in create mode.
   client: Client | null
-  onSave: (input: ClientInput, coverChange: ClientCoverChange) => Promise<void>
+  onSave: (input: ClientInput, coverChange: ClientCoverChange) => Promise<unknown>
   // Only given in edit mode.
   onDelete?: () => Promise<void>
   onClose: () => void
@@ -40,9 +43,14 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
 
   const isEditMode = client !== null
 
-  function updateValue(field: keyof ClientFormValues, value: string) {
+  function updateValue(field: ClientTextField, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
     setFieldErrors((current) => ({ ...current, [field]: undefined }))
+  }
+
+  function updateEmails(emails: ClientEmailFormRow[]) {
+    setValues((current) => ({ ...current, emails }))
+    setFieldErrors((current) => ({ ...current, emails: undefined }))
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -63,7 +71,6 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
   }
 
   const isBusy = isSaving || isConfirmingDelete
-  const submitLabel = isSaving ? common.saving : isEditMode ? clientStrings.form.saveChanges : clientStrings.form.create
 
   return (
     <Drawer
@@ -87,15 +94,7 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
           errorMessage={fieldErrors.name}
           onChange={(event) => updateValue('name', event.target.value)}
         />
-        <FormField
-          id="client-email"
-          label={clientStrings.form.email}
-          type="email"
-          value={values.email}
-          disabled={isBusy}
-          errorMessage={fieldErrors.email}
-          onChange={(event) => updateValue('email', event.target.value)}
-        />
+        <ClientEmailsField rows={values.emails} errorMessages={fieldErrors.emails} disabled={isBusy} onChange={updateEmails} />
         <FormField
           id="client-niche"
           label={clientStrings.form.niche}
@@ -145,26 +144,16 @@ export function ClientFormDrawer({ client, onSave, onDelete, onClose }: ClientFo
 
         {saveErrorMessage && <StatusMessage variant="error">{saveErrorMessage}</StatusMessage>}
 
-        {isConfirmingDelete && client && onDelete ? (
-          <DeleteClientConfirmation clientName={client.name} onConfirm={onDelete} onCancel={() => setIsConfirmingDelete(false)} />
-        ) : (
-          <div className="flex items-center justify-between gap-2 pt-2">
-            {/* Below the md breakpoint the save and close buttons sit in the drawer header. */}
-            <div className="flex gap-2 max-md:hidden">
-              <Button type="submit" variant="primary" disabled={isBusy}>
-                {submitLabel}
-              </Button>
-              <Button variant="ghost" onClick={onClose} disabled={isSaving}>
-                {common.cancel}
-              </Button>
-            </div>
-            {isEditMode && onDelete && (
-              <Button variant="dangerGhost" onClick={() => setIsConfirmingDelete(true)} disabled={isSaving}>
-                {common.delete}
-              </Button>
-            )}
-          </div>
-        )}
+        {/* The save and close buttons sit in the drawer header. */}
+        {isEditMode &&
+          onDelete &&
+          (isConfirmingDelete ? (
+            <DeleteClientConfirmation clientName={client.name} onConfirm={onDelete} onCancel={() => setIsConfirmingDelete(false)} />
+          ) : (
+            <Button variant="dangerGhost" onClick={() => setIsConfirmingDelete(true)} disabled={isSaving} className="self-start">
+              {common.delete}
+            </Button>
+          ))}
       </form>
     </Drawer>
   )

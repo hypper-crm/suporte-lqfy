@@ -59,6 +59,12 @@ export function OverdueAfterDaysForm({ overdueAfterDays, onSave }: OverdueAfterD
 
   return (
     <form noValidate onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
+      <div className="sticky top-0 z-raised -mx-4 -mt-4 flex items-center justify-between gap-3 rounded-t-card border-b border-border bg-surface px-4 py-3">
+        <h3 className="truncate text-sm font-semibold">{deadlineSettings.formTitle}</h3>
+        <Button type="submit" variant="primary" disabled={isSaving || !isDirty}>
+          {isSaving ? common.saving : common.save}
+        </Button>
+      </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor={fieldId} className="text-xs font-medium text-muted">
           {deadlineSettings.overdueAfterDays}
@@ -93,9 +99,6 @@ export function OverdueAfterDaysForm({ overdueAfterDays, onSave }: OverdueAfterD
       </div>
       {saveErrorMessage && <StatusMessage variant="error">{saveErrorMessage}</StatusMessage>}
       {isSaved && !isDirty && <StatusMessage variant="success">{common.saved}</StatusMessage>}
-      <Button type="submit" variant="primary" disabled={isSaving || !isDirty} className="self-start">
-        {isSaving ? common.saving : common.save}
-      </Button>
     </form>
   )
 }

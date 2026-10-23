@@ -2,12 +2,23 @@ import type { PostgrestError } from '@supabase/supabase-js'
 import { serviceErrors } from '../i18n/pt-BR'
 import { toUniqueStorageFileName } from '../lib/attachmentFiles'
 import { supabase } from '../lib/supabase'
-import type { ClientCoverChange, ClientInput, ClientRealtimeHandlers } from '../types/client'
-import type { Client } from '../types/database'
+import type {
+  ClientCoverChange,
+  ClientEmailInput,
+  ClientEmailRealtimeHandlers,
+  ClientInput,
+  ClientRealtimeHandlers,
+} from '../types/client'
+import type { Client, ClientEmail, ClientRow } from '../types/database'
 import { getPublicUrl, removePublicFiles, toStoragePath } from './publicStorage'
 import { subscribeToTableChanges } from './realtimeChannel'
 
-const clientFields = 'id, name, email, niche, pay_in_rate, pay_out_rate, website, cover_image_url, created_at, updated_at'
+const clientRowFields = 'id, name, niche, pay_in_rate, pay_out_rate, website, cover_image_url, created_at, updated_at'
+
+const clientEmailFields = 'id, client_id, email, position, created_at'
+
+// Emails are loaded in the same request as their clients.
+const clientFields = `${clientRowFields}, client_emails(${clientEmailFields})`
 
 const coverBucketName = 'client-covers'
 
@@ -24,11 +35,10 @@ function optionalNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function toClient(record: Record<string, unknown>): Client {
+function toClientRow(record: Record<string, unknown>): ClientRow {
   return {
     id: String(record.id),
     name: String(record.name ?? ''),
-    email: optionalString(record.email),
     niche: optionalString(record.niche),
     pay_in_rate: optionalNumber(record.pay_in_rate),
     pay_out_rate: optionalNumber(record.pay_out_rate),
@@ -39,8 +49,27 @@ function toClient(record: Record<string, unknown>): Client {
   }
 }
 
-function toClientRecord({ name, email, niche, payInRate, payOutRate, website }: ClientInput) {
-  return { name, email, niche, pay_in_rate: payInRate, pay_out_rate: payOutRate, website }
+function toClientEmail(record: Record<string, unknown>): ClientEmail {
+  return {
+    id: String(record.id),
+    client_id: String(record.client_id),
+    email: String(record.email ?? ''),
+    position: Number(record.position ?? 0),
+    created_at: String(record.created_at),
+  }
+}
+
+export function sortClientEmails(emails: ClientEmail[]): ClientEmail[] {
+  return [...emails].sort((first, second) => first.position - second.position)
+}
+
+function toClient(record: Record<string, unknown>): Client {
+  const emailRecords = Array.isArray(record.client_emails) ? (record.client_emails as Record<string, unknown>[]) : []
+  return { ...toClientRow(record), emails: sortClientEmails(emailRecords.map(toClientEmail)) }
+}
+
+function toClientValues({ name, niche, payInRate, payOutRate, website }: ClientInput) {
+  return { name, niche, pay_in_rate: payInRate, pay_out_rate: payOutRate, website }
 }
 
 function toSaveError(error: PostgrestError, fallbackMessage: string): Error {
@@ -52,6 +81,81 @@ export async function listClients(): Promise<Client[]> {
   const { data, error } = await supabase.from('clients').select(clientFields).order('name', { ascending: true })
   if (error) throw new Error(serviceErrors.clientsLoad)
   return data.map(toClient)
+}
+
+async function getClient(clientId: string, fallbackMessage: string): Promise<Client> {
+  const { data, error } = await supabase.from('clients').select(clientFields).eq('id', clientId).maybeSingle()
+  if (error || !data) throw new Error(fallbackMessage)
+  return toClient(data)
+}
+
+type SavedEmailRow = Pick<ClientEmail, 'id' | 'email' | 'position'>
+
+type EmailSyncPlan = {
+  deletedIds: string[]
+  updatedRows: SavedEmailRow[]
+  insertedRows: { email: string; position: number }[]
+}
+
+// Rows already holding a wanted email are kept first, so no update or insert collides with the unique (client_id, email) rule.
+function planEmailSync(savedRows: SavedEmailRow[], emails: ClientEmailInput[]): EmailSyncPlan {
+  const rowIdByIndex = new Map<number, string>()
+  const claimedIds = new Set<string>()
+
+  emails.forEach(({ email }, index) => {
+    const row = savedRows.find((current) => current.email === email && !claimedIds.has(current.id))
+    if (!row) return
+    rowIdByIndex.set(index, row.id)
+    claimedIds.add(row.id)
+  })
+
+  emails.forEach(({ id }, index) => {
+    if (rowIdByIndex.has(index) || !id || claimedIds.has(id) || !savedRows.some((row) => row.id === id)) return
+    rowIdByIndex.set(index, id)
+    claimedIds.add(id)
+  })
+
+  const savedRowsById = new Map(savedRows.map((row) => [row.id, row]))
+  const updatedRows: SavedEmailRow[] = []
+  const insertedRows: EmailSyncPlan['insertedRows'] = []
+
+  emails.forEach(({ email }, index) => {
+    const rowId = rowIdByIndex.get(index)
+    const savedRow = rowId ? savedRowsById.get(rowId) : undefined
+    if (!savedRow) {
+      insertedRows.push({ email, position: index })
+    } else if (savedRow.email !== email || savedRow.position !== index) {
+      updatedRows.push({ id: savedRow.id, email, position: index })
+    }
+  })
+
+  return { deletedIds: savedRows.filter((row) => !claimedIds.has(row.id)).map((row) => row.id), updatedRows, insertedRows }
+}
+
+// Makes the rows of `client_emails` match the list: removed emails are deleted, changed ones updated and new ones inserted.
+async function syncClientEmails(clientId: string, emails: ClientEmailInput[]): Promise<void> {
+  const { data: savedRows, error: loadError } = await supabase.from('client_emails').select('id, email, position').eq('client_id', clientId)
+  if (loadError) throw new Error(serviceErrors.clientEmailsSave)
+
+  const { deletedIds, updatedRows, insertedRows } = planEmailSync(
+    savedRows.map((row) => ({ id: String(row.id), email: String(row.email), position: Number(row.position) })),
+    emails,
+  )
+
+  if (deletedIds.length > 0) {
+    const { error } = await supabase.from('client_emails').delete().in('id', deletedIds)
+    if (error) throw new Error(serviceErrors.clientEmailsSave)
+  }
+
+  const updateResults = await Promise.all(
+    updatedRows.map(({ id, email, position }) => supabase.from('client_emails').update({ email, position }).eq('id', id)),
+  )
+  if (updateResults.some(({ error }) => error)) throw new Error(serviceErrors.clientEmailsSave)
+
+  if (insertedRows.length > 0) {
+    const { error } = await supabase.from('client_emails').insert(insertedRows.map((row) => ({ client_id: clientId, ...row })))
+    if (error) throw new Error(serviceErrors.clientEmailsSave)
+  }
 }
 
 // Uploads a cover image to "<client_id>/<unique_file_name>" and returns its storage path.
@@ -70,18 +174,26 @@ function coverPathOf(coverImageUrl: string | null): string[] {
 // The id is generated here so the cover can be uploaded into the client's folder before the row exists.
 export async function createClient(input: ClientInput, coverChange: ClientCoverChange): Promise<Client> {
   const clientId = crypto.randomUUID()
-  const coverPath = coverChange.kind === 'replace' ? await uploadCover(clientId, coverChange.file, coverChange.mimeType) : null
+  const coverPaths = coverChange.kind === 'replace' ? [await uploadCover(clientId, coverChange.file, coverChange.mimeType)] : []
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('clients')
-    .insert({ id: clientId, ...toClientRecord(input), cover_image_url: coverPath ? getPublicUrl(coverBucketName, coverPath) : null })
-    .select(clientFields)
-    .single()
+    .insert({ id: clientId, ...toClientValues(input), cover_image_url: coverPaths[0] ? getPublicUrl(coverBucketName, coverPaths[0]) : null })
   if (error) {
-    await removePublicFiles(coverBucketName, coverPath ? [coverPath] : [])
+    await removePublicFiles(coverBucketName, coverPaths)
     throw toSaveError(error, serviceErrors.clientCreate)
   }
-  return toClient(data)
+
+  try {
+    await syncClientEmails(clientId, input.emails)
+  } catch {
+    // A client without its emails is removed, so trying again does not create a duplicate.
+    await supabase.from('clients').delete().eq('id', clientId)
+    await removePublicFiles(coverBucketName, coverPaths)
+    throw new Error(serviceErrors.clientCreate)
+  }
+
+  return getClient(clientId, serviceErrors.clientCreate)
 }
 
 export async function updateClient(client: Client, input: ClientInput, coverChange: ClientCoverChange): Promise<Client> {
@@ -91,9 +203,9 @@ export async function updateClient(client: Client, input: ClientInput, coverChan
 
   const { data, error } = await supabase
     .from('clients')
-    .update({ ...toClientRecord(input), ...coverValues })
+    .update({ ...toClientValues(input), ...coverValues })
     .eq('id', client.id)
-    .select(clientFields)
+    .select('id')
     .maybeSingle()
   if (error || !data) {
     await removePublicFiles(coverBucketName, newCoverPath ? [newCoverPath] : [])
@@ -104,7 +216,14 @@ export async function updateClient(client: Client, input: ClientInput, coverChan
 
   // The previous cover is no longer referenced once it was replaced or removed.
   if (coverChange.kind !== 'keep') await removePublicFiles(coverBucketName, coverPathOf(client.cover_image_url))
-  return toClient(data)
+
+  try {
+    await syncClientEmails(client.id, input.emails)
+  } catch {
+    throw new Error(serviceErrors.clientEmailsSavePartial)
+  }
+
+  return getClient(client.id, serviceErrors.clientSave)
 }
 
 export async function deleteClient(client: Client): Promise<void> {
@@ -115,5 +234,9 @@ export async function deleteClient(client: Client): Promise<void> {
 }
 
 export function subscribeToClientChanges(handlers: ClientRealtimeHandlers): () => void {
-  return subscribeToTableChanges({ table: 'clients', toRow: toClient, handlers })
+  return subscribeToTableChanges({ table: 'clients', toRow: toClientRow, handlers })
+}
+
+export function subscribeToClientEmailChanges(handlers: ClientEmailRealtimeHandlers): () => void {
+  return subscribeToTableChanges({ table: 'client_emails', toRow: toClientEmail, handlers })
 }

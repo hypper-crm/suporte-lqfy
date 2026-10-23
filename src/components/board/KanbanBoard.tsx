@@ -24,6 +24,7 @@ import { groupCardIdsByColumn, positionBetween, type CardIdsByColumn } from '../
 import { getColumnStatuses } from '../../lib/columnStatus'
 import { mouseActivationConstraint, touchActivationConstraint } from '../../lib/dragSensors'
 import type { CardMove } from '../../types/board'
+import type { ClientCoverChange, ClientInput } from '../../types/client'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
 import { fluidEaseCss } from '../ui/motionPresets'
 import { BoardColumnView } from './BoardColumnView'
@@ -40,6 +41,7 @@ type KanbanBoardProps = {
   coversByCardId: Map<string, CardCoverImage>
   onMoveCard: (cardId: string, move: CardMove) => void
   onCreateCard: (columnId: string, title: string, clientId: string | null) => Promise<void>
+  onCreateClient: (input: ClientInput, coverChange: ClientCoverChange) => Promise<Client>
   onOpenCard: (cardId: string) => void
 }
 
@@ -83,6 +85,7 @@ export function KanbanBoard({
   coversByCardId,
   onMoveCard,
   onCreateCard,
+  onCreateClient,
   onOpenCard,
 }: KanbanBoardProps) {
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
@@ -200,6 +203,7 @@ export function KanbanBoard({
             coversByCardId={coversByCardId}
             presenceContext={presenceContext}
             onCreateCard={onCreateCard}
+            onCreateClient={onCreateClient}
             onOpenCard={onOpenCard}
           />
         ))}

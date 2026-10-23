@@ -14,12 +14,16 @@ type CardFieldProps = {
   form: CardDetailsFormState
 }
 
-export function CardTitleField({ form }: CardFieldProps) {
+type CardTitleFieldProps = CardFieldProps & {
+  isRequired?: boolean
+}
+
+export function CardTitleField({ form, isRequired = true }: CardTitleFieldProps) {
   return (
     <FormField
       id="card-title"
-      label={cardDetails.fields.title}
-      required
+      label={isRequired ? cardDetails.fields.title : cardDetails.fields.optionalTitle}
+      required={isRequired}
       maxLength={maximumCardTitleLength}
       value={form.values.title}
       disabled={form.isSaving}

@@ -1,4 +1,3 @@
-import { Plus } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useState, type FormEvent } from 'react'
 import { boards, common, serviceErrors } from '../../i18n/pt-BR'
@@ -7,6 +6,7 @@ import type { Client } from '../../types/database'
 import { Button } from '../ui/Button'
 import { Input, Select } from '../ui/Input'
 import { StatusMessage } from '../ui/StatusMessage'
+import { AddCardOpenButton } from './AddCardOpenButton'
 
 type AddCardFormProps = {
   clients: Client[]
@@ -48,18 +48,7 @@ export function AddCardForm({ clients, onCreate }: AddCardFormProps) {
     }
   }
 
-  if (!isOpen) {
-    return (
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="flex h-11 w-full items-center gap-2 md:h-9 rounded-card px-2.5 text-left text-sm font-medium text-muted outline-none transition-colors duration-200 ease-fluid hover:bg-hover hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent/40"
-      >
-        <Plus aria-hidden="true" className="size-4" />
-        {boards.addCard.open}
-      </button>
-    )
-  }
+  if (!isOpen) return <AddCardOpenButton onClick={() => setIsOpen(true)} />
 
   return (
     <motion.form

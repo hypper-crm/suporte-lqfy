@@ -26,7 +26,7 @@ type CardDetailsFormProps = {
   children: ReactNode
 }
 
-// Wraps the editable fields with the save button and the save, error and conflict messages.
+// Wraps the editable fields with the save, error and conflict messages. The save button sits in the drawer header.
 export function CardDetailsForm({ form, children }: CardDetailsFormProps) {
   const { isDirty, isSaved, saveErrorMessage, hasRemoteChanges } = form
 
@@ -50,9 +50,6 @@ export function CardDetailsForm({ form, children }: CardDetailsFormProps) {
 
       {saveErrorMessage && <StatusMessage variant="error">{saveErrorMessage}</StatusMessage>}
       {isSaved && !isDirty && <StatusMessage variant="success">{common.saved}</StatusMessage>}
-
-      {/* Below the md breakpoint the save button sits in the drawer header. */}
-      <CardSaveButton form={form} className="self-start max-md:hidden" />
     </form>
   )
 }

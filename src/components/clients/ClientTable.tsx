@@ -6,6 +6,7 @@ import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { Table, TableCell, TableHeaderCell, TableRow } from '../ui/Table'
 import { ClientCoverThumbnail } from './ClientCoverThumbnail'
+import { ClientEmailSummary } from './ClientEmailSummary'
 import { ClientWebsiteLink } from './ClientWebsiteLink'
 
 type ClientTableProps = {
@@ -45,7 +46,9 @@ export function ClientTable({ clients, onSelectClient }: ClientTableProps) {
                   </button>
                 </div>
               </TableCell>
-              <TableCell className={client.email ? 'text-muted' : 'text-subtle'}>{client.email ?? common.emptyValue}</TableCell>
+              <TableCell className="max-w-64">
+                <ClientEmailSummary emails={client.emails} />
+              </TableCell>
               <TableCell>{client.niche ? <Badge>{client.niche}</Badge> : <span className="text-subtle">{common.emptyValue}</span>}</TableCell>
               <TableCell className="max-w-56">
                 <ClientWebsiteLink clientName={client.name} website={client.website} />

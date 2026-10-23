@@ -7,6 +7,7 @@ import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { stateTransition } from '../ui/motionPresets'
 import { ClientCoverThumbnail } from './ClientCoverThumbnail'
+import { ClientEmailSummary } from './ClientEmailSummary'
 import { ClientWebsiteLink } from './ClientWebsiteLink'
 
 type ClientCardListProps = {
@@ -27,7 +28,7 @@ export function ClientCardList({ clients, onSelectClient }: ClientCardListProps)
                   <ClientCoverThumbnail coverImageUrl={client.cover_image_url} />
                   <div className="flex min-w-0 flex-col gap-0.5">
                     <p className="truncate font-medium">{client.name}</p>
-                    <p className={`truncate text-sm ${client.email ? 'text-muted' : 'text-subtle'}`}>{client.email ?? common.emptyValue}</p>
+                    <ClientEmailSummary emails={client.emails} className="text-sm" />
                   </div>
                 </div>
                 <Button variant="ghost" size="small" onClick={() => onSelectClient(client.id)} aria-label={clientStrings.editLabel(client.name)}>

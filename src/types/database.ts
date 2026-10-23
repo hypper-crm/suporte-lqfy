@@ -15,10 +15,10 @@ export type Profile = {
   created_at: string
 }
 
-export type Client = {
+// The legacy `email` column is not read or written. Emails live in `client_emails`.
+export type ClientRow = {
   id: string
   name: string
-  email: string | null
   niche: string | null
   pay_in_rate: number | null
   pay_out_rate: number | null
@@ -26,6 +26,19 @@ export type Client = {
   cover_image_url: string | null
   created_at: string
   updated_at: string
+}
+
+export type ClientEmail = {
+  id: string
+  client_id: string
+  email: string
+  position: number
+  created_at: string
+}
+
+// A client loaded together with its emails, sorted by position.
+export type Client = ClientRow & {
+  emails: ClientEmail[]
 }
 
 export type BoardColumn = {

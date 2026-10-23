@@ -7,6 +7,7 @@ import type { ColumnStatus } from '../../types/board'
 import type { Card, Client } from '../../types/database'
 import type { AvatarStackPerson } from '../ui/AvatarStack'
 import { CardAssignees } from './CardAssignees'
+import { CardClientHeader } from './CardClientHeader'
 import { CardCover } from './CardCover'
 import { CardTaskProgress } from './CardTaskProgress'
 import { ColumnStatusBadge } from './ColumnStatusBadge'
@@ -48,9 +49,9 @@ function SupportCardBody({ card, client, assignees, overdueDayCount }: CardBodyP
   return (
     <>
       <SupportCardLabels priority={card.priority} requestType={card.request_type} overdueDayCount={overdueDayCount} />
-      <div className="flex flex-col gap-1">
-        <p className="text-sm leading-snug font-medium break-words">{card.title}</p>
-        <p className={`truncate text-xs ${client ? 'text-muted' : 'text-subtle'}`}>{client?.name ?? boards.card.noClient}</p>
+      <div className="flex flex-col gap-1.5">
+        <CardClientHeader card={card} client={client} />
+        {client && <p className="text-sm leading-snug font-normal break-words">{card.title}</p>}
       </div>
       <div className="flex items-center justify-between gap-2 border-t border-border pt-2.5">
         <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted">
@@ -66,8 +67,8 @@ function SupportCardBody({ card, client, assignees, overdueDayCount }: CardBodyP
 function ImplementationCardBody({ card, client, assignees, taskProgress, columnStatus, overdueDayCount }: CardBodyProps) {
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <p className="truncate text-[15px] leading-snug font-semibold">{client?.name ?? card.title}</p>
+      <div className="flex flex-col gap-1.5">
+        <CardClientHeader card={card} client={client} />
         {card.description && <p className="line-clamp-2 text-xs leading-relaxed break-words text-muted">{card.description}</p>}
       </div>
       {(card.start_date || columnStatus) && (

@@ -1,8 +1,33 @@
 import { cardDetails, common } from '../../i18n/pt-BR'
 import { formatRate } from '../../lib/formatting'
-import type { Client } from '../../types/database'
+import type { Client, ClientEmail } from '../../types/database'
 import { Card } from '../../components/ui/Card'
 import { ClientWebsiteLink } from '../../components/clients/ClientWebsiteLink'
+
+type ClientEmailLinksProps = {
+  emails: ClientEmail[]
+}
+
+function ClientEmailLinks({ emails }: ClientEmailLinksProps) {
+  if (emails.length === 0) return <span className="text-subtle">{common.emptyValue}</span>
+  return (
+    <ul className="flex flex-col gap-1">
+      {emails.map(({ id, email }) => (
+        <li key={id} className="min-w-0">
+          <a
+            href={`mailto:${email}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={cardDetails.clientPanel.sendEmail(email)}
+            className="rounded break-all text-accent outline-none transition-colors duration-200 ease-fluid hover:text-accent-strong focus-visible:ring-2 focus-visible:ring-accent/40"
+          >
+            {email}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 type ClientInfoPanelProps = {
   client: Client | undefined
@@ -23,8 +48,10 @@ export function ClientInfoPanel({ client }: ClientInfoPanelProps) {
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
           <dt className="text-muted">{cardDetails.clientPanel.name}</dt>
           <dd className="font-medium break-words">{client.name}</dd>
-          <dt className="text-muted">{cardDetails.clientPanel.email}</dt>
-          <dd className="break-words">{client.email ?? common.emptyValue}</dd>
+          <dt className="text-muted">{cardDetails.clientPanel.emails}</dt>
+          <dd className="min-w-0">
+            <ClientEmailLinks emails={client.emails} />
+          </dd>
           <dt className="text-muted">{cardDetails.clientPanel.niche}</dt>
           <dd className="break-words">{client.niche ?? common.emptyValue}</dd>
           <dt className="text-muted">{cardDetails.clientPanel.website}</dt>

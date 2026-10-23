@@ -1,20 +1,17 @@
 import { ChecklistSection, type ChecklistStatus } from '../components/checklist/ChecklistSection'
+import { ColumnStatusBadge } from '../components/board/ColumnStatusBadge'
 import { OverdueBadge } from '../components/board/OverdueBadge'
+import { Avatar } from '../components/ui/Avatar'
 import { Drawer } from '../components/ui/Drawer'
 import type { CardChecklistActions } from '../hooks/useCardTasks'
 import { useCardDrawer, type CardDrawerProps } from '../hooks/useCardDrawer'
-import { cardDetails } from '../i18n/pt-BR'
+import type { ColumnStatus } from '../types/board'
 import type { Card, CardTask, Profile } from '../types/database'
 import { AttachmentsSection } from './cardDetails/AttachmentsSection'
 import { CardCoverSection } from './cardDetails/CardCoverSection'
 import { CardDetailsForm, CardSaveButton } from './cardDetails/CardDetailsForm'
-import {
-  CardAssigneesField,
-  CardClientField,
-  CardDescriptionField,
-  CardStartDateField,
-  CardTitleField,
-} from './cardDetails/CardFormFields'
+import { CardAssigneesField, CardClientField, CardStartDateField } from './cardDetails/CardFormFields'
+import { CardTitleDescriptionSection } from './cardDetails/CardTitleDescriptionSection'
 import { ClientInfoPanel } from './cardDetails/ClientInfoPanel'
 import { DeleteCardSection } from './cardDetails/DeleteCardSection'
 import { MissingCardDrawer } from './cardDetails/MissingCardDrawer'
@@ -27,6 +24,8 @@ type ImplementationCardContentProps = CardDrawerProps & {
   tasks: CardTask[]
   checklistStatus: ChecklistStatus
   checklistActions: CardChecklistActions
+  // The column the card is in, shown as a status badge.
+  columnStatus: ColumnStatus | undefined
 }
 
 function ImplementationCardContent({
@@ -36,26 +35,36 @@ function ImplementationCardContent({
   tasks,
   checklistStatus,
   checklistActions,
+  columnStatus,
   ...drawerProps
 }: ImplementationCardContentProps) {
   const { card, clients, overdueDayCount } = drawerProps
   const { form, linkedClient, requestClose, updateCover, deleteCard } = useCardDrawer(drawerProps)
 
+  const hasBadges = columnStatus !== undefined || overdueDayCount !== undefined
+
   return (
+    // The header leads with the client, like the card on the board.
     <Drawer
-      title={cardDetails.title}
-      description={card.title}
+      title={linkedClient?.name ?? card.title}
+      titleLeading={linkedClient && <Avatar fullName={linkedClient.name} imageUrl={linkedClient.cover_image_url} />}
       onClose={requestClose}
       headerAction={<CardSaveButton form={form} />}
-      headerBadges={overdueDayCount !== undefined && <OverdueBadge dayCount={overdueDayCount} />}
+      headerBadges={
+        hasBadges && (
+          <>
+            {columnStatus && <ColumnStatusBadge status={columnStatus} />}
+            <OverdueBadge dayCount={overdueDayCount} />
+          </>
+        )
+      }
     >
       <ClientInfoPanel client={linkedClient} />
       <CardDetailsForm form={form}>
-        <CardTitleField form={form} />
-        <CardDescriptionField form={form} />
+        <CardAssigneesField form={form} profiles={profiles} />
         <CardStartDateField form={form} />
         <CardClientField form={form} clients={clients} />
-        <CardAssigneesField form={form} profiles={profiles} />
+        <CardTitleDescriptionSection form={form} isTitleRequired={!form.values.clientId} />
       </CardDetailsForm>
       <ChecklistSection
         cardId={card.id}
