@@ -1,9 +1,13 @@
 import { AnimatePresence } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { useBoard } from '../../hooks/useBoard'
+import { useCardCovers } from '../../hooks/useCardCovers'
 import { useCardTasks } from '../../hooks/useCardTasks'
 import { useClients } from '../../hooks/useClients'
+import { useTeamSettings } from '../../hooks/useTeamSettings'
 import { boards, common } from '../../i18n/pt-BR'
+import { getOverdueDayCounts } from '../../lib/boardSummary'
+import { resolveCardCover, type CardCoverImage } from '../../lib/cardCover'
 import { ImplementationCardDrawer } from '../../shared/ImplementationCardDrawer'
 import { SupportCardDrawer } from '../../shared/SupportCardDrawer'
 import type { Board } from '../../types/database'
@@ -37,6 +41,7 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
     moveCard,
     createCard,
     updateCard,
+    updateCardCover,
     deleteCard,
   } = useBoard(board, currentUserId)
   const {
@@ -48,6 +53,8 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
   } = useClients()
   // Only implementation cards have checklists.
   const cardTasks = useCardTasks(board === 'implementation', currentUserId)
+  const teamSettings = useTeamSettings()
+  const coverUrls = useCardCovers(cards)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
 
   const profiles = useMemo(
@@ -58,7 +65,22 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
     [profilesById],
   )
 
-  if (isLoading || isLoadingClients) {
+  const overdueDayCounts = useMemo(
+    () => getOverdueDayCounts(columns, cards, teamSettings.overdueAfterDays),
+    [columns, cards, teamSettings.overdueAfterDays],
+  )
+
+  const coversByCardId = useMemo(() => {
+    const clientsById = new Map(clients.map((client) => [client.id, client]))
+    const covers = new Map<string, CardCoverImage>()
+    for (const card of cards) {
+      const cover = resolveCardCover(card, card.client_id ? clientsById.get(card.client_id) : undefined, coverUrls)
+      if (cover) covers.set(card.id, cover)
+    }
+    return covers
+  }, [cards, clients, coverUrls])
+
+  if (isLoading || isLoadingClients || teamSettings.isLoading) {
     return <BoardSkeleton />
   }
 
@@ -84,11 +106,16 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
     )
   }
 
-  const isAnyRealtimeDisconnected = isRealtimeDisconnected || isClientsRealtimeDisconnected || cardTasks.isRealtimeDisconnected
+  const isAnyRealtimeDisconnected =
+    isRealtimeDisconnected ||
+    isClientsRealtimeDisconnected ||
+    cardTasks.isRealtimeDisconnected ||
+    teamSettings.isRealtimeDisconnected
 
   function reloadAll() {
     reload()
     reloadClients()
+    teamSettings.reload()
     if (board === 'implementation') cardTasks.reload()
   }
 
@@ -107,7 +134,9 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
       clients,
       profiles,
       currentUserId,
+      overdueDayCount: overdueDayCounts.get(selectedCardId),
       onSave: updateCard,
+      onUpdateCover: updateCardCover,
       onDelete: deleteCard,
       onClose: closeDrawer,
     }
@@ -127,8 +156,8 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <BoardMetricChips columns={columns} cards={cards} assigneeIdsByCardId={assigneeIdsByCardId} />
-      {(moveErrorMessage || cardTasks.loadErrorMessage || isAnyRealtimeDisconnected) && (
+      <BoardMetricChips columns={columns} cards={cards} overdueDayCounts={overdueDayCounts} />
+      {(moveErrorMessage || cardTasks.loadErrorMessage || teamSettings.loadErrorMessage || isAnyRealtimeDisconnected) && (
         <div className="flex flex-col gap-2 px-4 md:px-8 pt-4">
           {moveErrorMessage && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -142,6 +171,14 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusMessage variant="error">{cardTasks.loadErrorMessage}</StatusMessage>
               <Button variant="link" onClick={cardTasks.reload}>
+                {common.tryAgain}
+              </Button>
+            </div>
+          )}
+          {teamSettings.loadErrorMessage && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <StatusMessage variant="error">{teamSettings.loadErrorMessage}</StatusMessage>
+              <Button variant="link" onClick={teamSettings.reload}>
                 {common.tryAgain}
               </Button>
             </div>
@@ -167,6 +204,8 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
             assigneeIdsByCardId={assigneeIdsByCardId}
             profilesById={profilesById}
             progressByCardId={cardTasks.progressByCardId}
+            overdueDayCounts={overdueDayCounts}
+            coversByCardId={coversByCardId}
             onMoveCard={moveCard}
             onCreateCard={createCardWithChecklist}
             onOpenCard={setSelectedCardId}

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ComponentPropsWithRef } from 'react'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerGhost' | 'link'
 
@@ -21,7 +21,7 @@ const sizeClassNames: Record<ButtonSize, string> = {
   icon: 'size-11 md:size-8',
 }
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = ComponentPropsWithRef<'button'> & {
   variant?: ButtonVariant
   size?: ButtonSize
 }

@@ -3,6 +3,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { AnimatePresence, motion } from 'motion/react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
 import { toAssigneePeople } from '../../lib/assignees'
+import type { CardCoverImage } from '../../lib/cardCover'
 import type { ColumnStatus } from '../../types/board'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
 import { Badge } from '../ui/Badge'
@@ -19,6 +20,8 @@ type BoardColumnViewProps = {
   // Implementation board only.
   columnStatus: ColumnStatus | undefined
   progressByCardId: Map<string, TaskProgress>
+  overdueDayCounts: Map<string, number>
+  coversByCardId: Map<string, CardCoverImage>
   presenceContext: CardPresenceContext
   onCreateCard: (columnId: string, title: string, clientId: string | null) => Promise<void>
   onOpenCard: (cardId: string) => void
@@ -33,6 +36,8 @@ export function BoardColumnView({
   profilesById,
   columnStatus,
   progressByCardId,
+  overdueDayCounts,
+  coversByCardId,
   presenceContext,
   onCreateCard,
   onOpenCard,
@@ -61,6 +66,8 @@ export function BoardColumnView({
                 assignees={toAssigneePeople(assigneeIdsByCardId.get(card.id), profilesById)}
                 taskProgress={progressByCardId.get(card.id)}
                 columnStatus={columnStatus}
+                overdueDayCount={overdueDayCounts.get(card.id)}
+                cover={coversByCardId.get(card.id)}
                 presenceContext={presenceContext}
                 onOpen={onOpenCard}
               />

@@ -19,6 +19,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
 import { toAssigneePeople } from '../../lib/assignees'
+import type { CardCoverImage } from '../../lib/cardCover'
 import { groupCardIdsByColumn, positionBetween, type CardIdsByColumn } from '../../lib/cardPosition'
 import { getColumnStatuses } from '../../lib/columnStatus'
 import { mouseActivationConstraint, touchActivationConstraint } from '../../lib/dragSensors'
@@ -35,6 +36,8 @@ type KanbanBoardProps = {
   assigneeIdsByCardId: Map<string, string[]>
   profilesById: Record<string, Profile>
   progressByCardId: Map<string, TaskProgress>
+  overdueDayCounts: Map<string, number>
+  coversByCardId: Map<string, CardCoverImage>
   onMoveCard: (cardId: string, move: CardMove) => void
   onCreateCard: (columnId: string, title: string, clientId: string | null) => Promise<void>
   onOpenCard: (cardId: string) => void
@@ -76,6 +79,8 @@ export function KanbanBoard({
   assigneeIdsByCardId,
   profilesById,
   progressByCardId,
+  overdueDayCounts,
+  coversByCardId,
   onMoveCard,
   onCreateCard,
   onOpenCard,
@@ -191,6 +196,8 @@ export function KanbanBoard({
             profilesById={profilesById}
             columnStatus={columnStatuses?.get(column.id)}
             progressByCardId={progressByCardId}
+            overdueDayCounts={overdueDayCounts}
+            coversByCardId={coversByCardId}
             presenceContext={presenceContext}
             onCreateCard={onCreateCard}
             onOpenCard={onOpenCard}
@@ -205,6 +212,8 @@ export function KanbanBoard({
             assignees={toAssigneePeople(assigneeIdsByCardId.get(activeCard.id), profilesById)}
             taskProgress={progressByCardId.get(activeCard.id)}
             columnStatus={columnStatuses?.get(findColumnId(visibleCardIds, activeCard.id) ?? activeCard.column_id)}
+            overdueDayCount={overdueDayCounts.get(activeCard.id)}
+            cover={coversByCardId.get(activeCard.id)}
             appearance="dragOverlay"
           />
         )}

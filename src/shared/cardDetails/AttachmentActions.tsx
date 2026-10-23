@@ -1,19 +1,27 @@
-import { Download, ExternalLink, Trash2 } from 'lucide-react'
+import { Download, ExternalLink, ImageUp, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { attachments, common, serviceErrors } from '../../i18n/pt-BR'
+import { attachments, cardDetails, common, serviceErrors } from '../../i18n/pt-BR'
 import { openUrlInNewTab, startDownload } from '../../lib/fileActions'
 import { getAttachmentUrl } from '../../services/attachmentService'
 import type { CardAttachment } from '../../types/database'
+import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+
+// Image attachments only.
+export type AttachmentCoverAction = {
+  isCover: boolean
+  onUseAsCover: () => Promise<void>
+}
 
 type AttachmentActionsProps = {
   attachment: CardAttachment
+  cover?: AttachmentCoverAction
   onDelete: (attachment: CardAttachment) => Promise<void>
 }
 
-type PendingAction = 'open' | 'download' | 'delete'
+type PendingAction = 'open' | 'download' | 'cover' | 'delete'
 
-export function AttachmentActions({ attachment, onDelete }: AttachmentActionsProps) {
+export function AttachmentActions({ attachment, cover, onDelete }: AttachmentActionsProps) {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -29,6 +37,18 @@ export function AttachmentActions({ attachment, onDelete }: AttachmentActionsPro
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : serviceErrors.attachmentLink)
+    } finally {
+      setPendingAction(null)
+    }
+  }
+
+  async function setAsCover(onUseAsCover: () => Promise<void>) {
+    setPendingAction('cover')
+    setErrorMessage(null)
+    try {
+      await onUseAsCover()
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : serviceErrors.cardCoverSave)
     } finally {
       setPendingAction(null)
     }
@@ -69,6 +89,23 @@ export function AttachmentActions({ attachment, onDelete }: AttachmentActionsPro
             <Download aria-hidden="true" className="size-3.5" />
             {pendingAction === 'download' ? attachments.preparing : attachments.download}
           </Button>
+          {cover &&
+            (cover.isCover ? (
+              <Badge variant="accent" className="mx-2">
+                {cardDetails.cover.currentCover}
+              </Badge>
+            ) : (
+              <Button
+                variant="ghost"
+                size="compact"
+                onClick={() => void setAsCover(cover.onUseAsCover)}
+                disabled={isBusy}
+                className="gap-1.5"
+              >
+                <ImageUp aria-hidden="true" className="size-3.5" />
+                {pendingAction === 'cover' ? cardDetails.cover.settingCover : cardDetails.cover.useAsCover}
+              </Button>
+            ))}
           <Button variant="dangerGhost" size="compact" onClick={() => setIsConfirmingDelete(true)} disabled={isBusy} className="gap-1.5">
             <Trash2 aria-hidden="true" className="size-3.5" />
             {common.delete}

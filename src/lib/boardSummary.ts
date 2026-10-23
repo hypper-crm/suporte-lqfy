@@ -1,45 +1,45 @@
 import type { BoardColumn, Card } from '../types/database'
+import { daysUntil } from './elapsedTime'
 
 export type BoardSummary = {
-  openCardCount: number
-  unassignedOpenCardCount: number
-  doneThisWeekCount: number
+  openCount: number
+  doneCount: number
+  overdueCount: number
 }
 
-const doneColumnNamePattern =
-  /\b(done|complete|completed|closed|resolved|finished|live|conclu[ií]d[oa]s?|finalizad[oa]s?|resolvid[oa]s?|fechad[oa]s?|encerrad[oa]s?|entregues?)(?![\p{L}\p{N}])/iu
-
-// Columns whose name reads as finished work. Without one, the last column is treated as the done column.
-export function findDoneColumnIds(columns: BoardColumn[]): Set<string> {
-  const namedDoneColumns = columns.filter((column) => doneColumnNamePattern.test(column.name))
-  if (namedDoneColumns.length > 0) return new Set(namedDoneColumns.map((column) => column.id))
-  const lastColumn = columns.reduce<BoardColumn | undefined>(
-    (latest, column) => (!latest || column.position > latest.position ? column : latest),
-    undefined,
-  )
-  return new Set(lastColumn ? [lastColumn.id] : [])
+// `columns` must be sorted by position. Cards in the last column are done, every other card is open.
+export function findLastColumnId(columns: BoardColumn[]): string | undefined {
+  return columns.at(-1)?.id
 }
 
-// Weeks start on Monday at midnight, local time.
-function startOfCurrentWeek(now: Date): Date {
-  const daysSinceMonday = (now.getDay() + 6) % 7
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday)
+// Whole days since the card's start date when the card is overdue, otherwise null.
+// An open card is overdue when its start date is more than `overdueAfterDays` days before today.
+export function getOverdueDayCount(card: Card, isOpen: boolean, overdueAfterDays: number, today = new Date()): number | null {
+  if (!isOpen || !card.start_date) return null
+  const daysUntilStart = daysUntil(card.start_date, today)
+  if (daysUntilStart === null) return null
+  const daysSinceStart = -daysUntilStart
+  return daysSinceStart > overdueAfterDays ? daysSinceStart : null
 }
 
-export function summarizeBoard(
-  columns: BoardColumn[],
-  cards: Card[],
-  assigneeIdsByCardId: Map<string, string[]>,
-  now = new Date(),
-): BoardSummary {
-  const doneColumnIds = findDoneColumnIds(columns)
-  const weekStartTime = startOfCurrentWeek(now).getTime()
-  const openCards = cards.filter((card) => !doneColumnIds.has(card.column_id))
-  const doneCards = cards.filter((card) => doneColumnIds.has(card.column_id))
+// Days overdue per card id. Cards that are not overdue are missing from the map.
+export function getOverdueDayCounts(columns: BoardColumn[], cards: Card[], overdueAfterDays: number, today = new Date()): Map<string, number> {
+  const lastColumnId = findLastColumnId(columns)
+  const overdueDayCounts = new Map<string, number>()
+  for (const card of cards) {
+    const dayCount = getOverdueDayCount(card, card.column_id !== lastColumnId, overdueAfterDays, today)
+    if (dayCount !== null) overdueDayCounts.set(card.id, dayCount)
+  }
+  return overdueDayCounts
+}
+
+export function summarizeBoard(columns: BoardColumn[], cards: Card[], overdueDayCounts: Map<string, number>): BoardSummary {
+  const lastColumnId = findLastColumnId(columns)
+  const doneCount = cards.filter((card) => card.column_id === lastColumnId).length
 
   return {
-    openCardCount: openCards.length,
-    unassignedOpenCardCount: openCards.filter((card) => !assigneeIdsByCardId.has(card.id)).length,
-    doneThisWeekCount: doneCards.filter((card) => new Date(card.updated_at).getTime() >= weekStartTime).length,
+    openCount: cards.length - doneCount,
+    doneCount,
+    overdueCount: overdueDayCounts.size,
   }
 }

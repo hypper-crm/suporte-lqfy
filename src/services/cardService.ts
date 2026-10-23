@@ -1,6 +1,6 @@
 import { serviceErrors } from '../i18n/pt-BR'
 import { supabase } from '../lib/supabase'
-import type { CardMove, CardRealtimeHandlers, CardUpdateInput, CreatedCard, NewCardInput } from '../types/board'
+import type { CardCoverInput, CardMove, CardRealtimeHandlers, CardUpdateInput, CreatedCard, NewCardInput } from '../types/board'
 import type { Board, Card, CardPriority, CardRequestType } from '../types/database'
 import { deleteAttachmentRecordsForCard, removeStorageObjects } from './attachmentService'
 import { deleteAssigneesForCard } from './cardAssigneeService'
@@ -8,7 +8,7 @@ import { copyStepTemplatesToCard, deleteTasksForCard } from './cardTaskService'
 import { subscribeToTableChanges } from './realtimeChannel'
 
 const cardFields =
-  'id, board, column_id, title, description, client_id, start_date, position, priority, request_type, created_by, created_at, updated_at'
+  'id, board, column_id, title, description, client_id, start_date, position, priority, request_type, cover_attachment_id, show_client_cover, created_by, created_at, updated_at'
 
 function optionalString(value: unknown): string | null {
   return typeof value === 'string' ? value : null
@@ -34,6 +34,8 @@ function toCard(record: Record<string, unknown>): Card {
     position: Number(record.position),
     priority: optionalOption(record.priority, cardPriorities),
     request_type: optionalOption(record.request_type, cardRequestTypes),
+    cover_attachment_id: optionalString(record.cover_attachment_id),
+    show_client_cover: record.show_client_cover === true,
     created_by: optionalString(record.created_by),
     created_at: String(record.created_at),
     updated_at: String(record.updated_at),
@@ -100,6 +102,18 @@ export async function updateCard(
     .select(cardFields)
     .maybeSingle()
   if (error) throw new Error(serviceErrors.cardSave)
+  if (!data) throw new Error(serviceErrors.cardSaveMissing)
+  return toCard(data)
+}
+
+export async function updateCardCover(cardId: string, { coverAttachmentId, showClientCover }: CardCoverInput): Promise<Card> {
+  const { data, error } = await supabase
+    .from('cards')
+    .update({ cover_attachment_id: coverAttachmentId, show_client_cover: showClientCover })
+    .eq('id', cardId)
+    .select(cardFields)
+    .maybeSingle()
+  if (error) throw new Error(serviceErrors.cardCoverSave)
   if (!data) throw new Error(serviceErrors.cardSaveMissing)
   return toCard(data)
 }

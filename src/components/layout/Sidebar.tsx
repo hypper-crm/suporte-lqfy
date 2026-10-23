@@ -1,4 +1,4 @@
-import { LifeBuoy, ListChecks, Rocket, Users, type LucideIcon } from 'lucide-react'
+import { CalendarClock, LifeBuoy, ListChecks, Rocket, Users, type LucideIcon } from 'lucide-react'
 import { screens } from '../../i18n/pt-BR'
 import { screenLabels } from '../../lib/screens'
 import type { AppScreen } from '../../types/board'
@@ -24,7 +24,10 @@ const sidebarSections: SidebarSection[] = [
   },
   {
     label: screens.settingsSection,
-    items: [{ screen: 'stepSettings', icon: ListChecks }],
+    items: [
+      { screen: 'stepSettings', icon: ListChecks },
+      { screen: 'deadlineSettings', icon: CalendarClock },
+    ],
   },
 ]
 

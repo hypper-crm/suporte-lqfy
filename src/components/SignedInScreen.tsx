@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { AnimatePresence } from 'motion/react'
+import { useCallback, useRef, useState } from 'react'
 import { useProfile } from '../hooks/useProfile'
 import type { SessionState } from '../hooks/useSession'
 import { common } from '../i18n/pt-BR'
 import { screenLabels } from '../lib/screens'
 import type { User } from '../types/auth'
 import type { AppScreen } from '../types/board'
-import type { Board } from '../types/database'
 import { BoardPage } from './board/BoardPage'
 import { ClientsScreen } from './clients/ClientsScreen'
-import { MobileTabBar } from './layout/MobileTabBar'
+import { DeadlineSettingsScreen } from './deadlineSettings/DeadlineSettingsScreen'
+import { MobileSideMenu } from './layout/MobileSideMenu'
 import { Sidebar } from './layout/Sidebar'
 import { TopBar } from './layout/TopBar'
 import { ProfileScreen } from './profile/ProfileScreen'
@@ -22,21 +23,21 @@ type SignedInScreenProps = Pick<SessionState, 'isSigningOut' | 'signOutErrorMess
 
 export function SignedInScreen({ user, isSigningOut, signOutErrorMessage, signOut }: SignedInScreenProps) {
   const [activeScreen, setActiveScreen] = useState<AppScreen>('support')
-  // Reopened by the boards tab of the mobile tab bar.
-  const [lastBoard, setLastBoard] = useState<Board>('support')
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const { profile, errorMessage: profileErrorMessage, reload: reloadProfile, uploadAvatar } = useProfile(user.id)
   const displayName = profile?.full_name || user.email || null
 
-  function changeScreen(screen: AppScreen) {
-    setActiveScreen(screen)
-    if (screen === 'support' || screen === 'implementation') setLastBoard(screen)
-  }
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false)
+    menuButtonRef.current?.focus()
+  }, [])
 
   return (
     // Below the md breakpoint the page scrolls as a whole. From md up, each screen scrolls inside the main area.
     <div className="flex min-h-dvh bg-background text-foreground md:h-dvh">
-      <Sidebar activeScreen={activeScreen} onScreenChange={changeScreen} />
-      <div className="pb-mobile-tab-bar flex min-w-0 flex-1 flex-col overflow-x-clip pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] md:pb-0">
+      <Sidebar activeScreen={activeScreen} onScreenChange={setActiveScreen} />
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-clip pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:pb-0">
         <TopBar
           title={screenLabels[activeScreen]}
           // Without a profile there is no name to show, unless loading failed and the email is the fallback.
@@ -44,9 +45,12 @@ export function SignedInScreen({ user, isSigningOut, signOutErrorMessage, signOu
           avatarUrl={profile?.avatar_url ?? null}
           isProfileOpen={activeScreen === 'profile'}
           isSigningOut={isSigningOut}
+          isMenuOpen={isMenuOpen}
+          menuButtonRef={menuButtonRef}
           onSignOut={() => void signOut()}
-          onOpenClients={() => changeScreen('clients')}
-          onOpenProfile={() => changeScreen('profile')}
+          onOpenClients={() => setActiveScreen('clients')}
+          onOpenProfile={() => setActiveScreen('profile')}
+          onOpenMenu={() => setIsMenuOpen(true)}
         />
         {(signOutErrorMessage || profileErrorMessage) && (
           <div className="flex flex-col gap-2 px-4 md:px-8 pt-4">
@@ -64,13 +68,24 @@ export function SignedInScreen({ user, isSigningOut, signOutErrorMessage, signOu
         <main className="flex flex-1 flex-col md:min-h-0">
           {activeScreen === 'clients' && <ClientsScreen />}
           {activeScreen === 'stepSettings' && <StepSettingsScreen />}
+          {activeScreen === 'deadlineSettings' && <DeadlineSettingsScreen />}
           {activeScreen === 'profile' && <ProfileScreen profile={profile} email={user.email ?? null} onUploadAvatar={uploadAvatar} />}
           {(activeScreen === 'support' || activeScreen === 'implementation') && (
-            <BoardPage board={activeScreen} currentUserId={user.id} onBoardChange={changeScreen} />
+            <BoardPage board={activeScreen} currentUserId={user.id} />
           )}
         </main>
       </div>
-      <MobileTabBar activeScreen={activeScreen} lastBoard={lastBoard} onScreenChange={changeScreen} />
+      <AnimatePresence>
+        {isMenuOpen && (
+          <MobileSideMenu
+            activeScreen={activeScreen}
+            isSigningOut={isSigningOut}
+            onScreenChange={setActiveScreen}
+            onSignOut={() => void signOut()}
+            onClose={closeMenu}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

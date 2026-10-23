@@ -46,6 +46,10 @@ export type Card = {
   position: number
   priority: CardPriority | null
   request_type: CardRequestType | null
+  // An image attachment of the card shown as its cover.
+  cover_attachment_id: string | null
+  // Falls back to the client's cover image when the card has no cover of its own.
+  show_client_cover: boolean
   created_by: string | null
   created_at: string
   updated_at: string
@@ -83,4 +87,10 @@ export type CardTask = {
   is_done: boolean
   completed_at: string | null
   completed_by: string | null
+}
+
+// A single row with id 1, shared by the whole team.
+export type TeamSettings = {
+  id: number
+  overdue_after_days: number
 }

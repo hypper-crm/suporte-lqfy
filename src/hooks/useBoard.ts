@@ -10,9 +10,10 @@ import {
   moveCard as moveCardRequest,
   subscribeToCardChanges,
   updateCard as updateCardRequest,
+  updateCardCover as updateCardCoverRequest,
 } from '../services/cardService'
 import { listProfiles } from '../services/profileService'
-import type { CardDetailsInput, CardMove, SavedCardDetails } from '../types/board'
+import type { CardCoverInput, CardDetailsInput, CardMove, SavedCardDetails } from '../types/board'
 import type { Board, BoardColumn, Card, CardAssignee, CardTask, Profile } from '../types/database'
 
 // How long an optimistic move waits for its own realtime echo before the echo is no longer expected.
@@ -34,6 +35,7 @@ export type BoardState = {
   // Resolves with the checklist copied into a new implementation card.
   createCard: (columnId: string, title: string, clientId: string | null) => Promise<CardTask[]>
   updateCard: (cardId: string, input: CardDetailsInput) => Promise<SavedCardDetails>
+  updateCardCover: (cardId: string, input: CardCoverInput) => Promise<void>
   deleteCard: (cardId: string) => Promise<void>
 }
 
@@ -210,6 +212,11 @@ export function useBoard(board: Board, currentUserId: string): BoardState {
     [assigneeIdsByCardId],
   )
 
+  const updateCardCover = useCallback(async (cardId: string, input: CardCoverInput) => {
+    const updatedCard = await updateCardCoverRequest(cardId, input)
+    setCards((current) => upsertById(current, updatedCard))
+  }, [])
+
   const deleteCard = useCallback(async (cardId: string) => {
     await deleteCardRequest(cardId)
     setCards((current) => removeById(current, cardId))
@@ -230,6 +237,7 @@ export function useBoard(board: Board, currentUserId: string): BoardState {
     moveCard,
     createCard,
     updateCard,
+    updateCardCover,
     deleteCard,
   }
 }

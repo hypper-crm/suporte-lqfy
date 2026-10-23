@@ -37,13 +37,10 @@ export const screens = {
   implementation: 'Implementação',
   clients: 'Clientes',
   stepSettings: 'Etapas de implantação',
+  deadlineSettings: 'Prazos',
   profile: 'Meu perfil',
   navigationLabel: 'Telas',
   boardsSection: 'Quadros',
-  // Short labels for the mobile bottom tab bar.
-  boardsTab: 'Quadros',
-  clientsTab: 'Clientes',
-  stepSettingsTab: 'Etapas',
   directorySection: 'Cadastros',
   settingsSection: 'Configurações',
 }
@@ -58,6 +55,8 @@ export const header = {
   openProfile: 'Abrir meu perfil',
   signOut: 'Sair',
   signingOut: 'Saindo…',
+  openMenu: 'Abrir menu de navegação',
+  sideMenuLabel: 'Menu de navegação',
   profileNotFound: 'Seu perfil não foi encontrado. Fale com um administrador.',
 }
 
@@ -101,7 +100,6 @@ export const auth = {
 }
 
 export const boards = {
-  boardTabsLabel: 'Quadros',
   titles: {
     support: 'Quadro de suporte',
     implementation: 'Quadro de implementação',
@@ -115,12 +113,12 @@ export const boards = {
   realtimePaused: 'As atualizações em tempo real estão pausadas. Alterações da equipe podem não aparecer até você recarregar.',
   summary: {
     label: 'Resumo do quadro',
-    openCards: 'Cards abertos',
-    openCardsCaption: 'Fora de uma coluna de concluídos',
-    withoutAssignee: 'Sem responsável',
-    withoutAssigneeCaption: 'Cards abertos ainda sem dono',
-    doneThisWeek: 'Concluídos na semana',
-    doneThisWeekCaption: 'Movidos para concluídos desde segunda-feira',
+    open: 'Abertos',
+    openCaption: 'Cards fora da última coluna',
+    done: 'Concluídos',
+    doneCaption: 'Cards na última coluna',
+    overdue: 'Atrasados',
+    overdueCaption: 'Cards abertos com a data de início além do prazo',
   },
   card: {
     ariaLabel: (title: string) => `Card: ${title}`,
@@ -134,6 +132,7 @@ export const boards = {
     startsIn: (dayCount: number) => (dayCount === 1 ? 'Começa em 1 dia' : `Começa em ${dayCount} dias`),
     daysAgo: (dayCount: number) => (dayCount === 1 ? 'Há 1 dia' : `Há ${dayCount} dias`),
     statusLabel: (columnName: string) => `Status: ${columnName}`,
+    overdue: (dayCount: number) => (dayCount === 1 ? 'Atrasado há 1 dia' : `Atrasado há ${dayCount} dias`),
     taskProgressLabel: (doneCount: number, totalCount: number) => `${doneCount} de ${totalCount} etapas concluídas`,
   },
   addCard: {
@@ -200,6 +199,17 @@ export const cardDetails = {
     coverAlt: (clientName: string) => `Imagem de capa de ${clientName}`,
     noClientLinked: 'Nenhum cliente vinculado',
   },
+  cover: {
+    title: 'Capa',
+    useAsCover: 'Usar como capa',
+    settingCover: 'Definindo…',
+    currentCover: 'Capa',
+    removeCover: 'Remover capa',
+    removingCover: 'Removendo…',
+    noCover: 'Este card não tem capa. Use “Usar como capa” em uma imagem anexada.',
+    hasCover: 'Uma imagem anexada é a capa deste card.',
+    showClientCover: 'Mostrar capa do cliente quando não houver capa do card',
+  },
   deleteCard: {
     open: 'Excluir card',
     confirmation: (cardTitle: string) => `Excluir “${cardTitle}”? Esta ação não pode ser desfeita. Todos os anexos também serão excluídos.`,
@@ -238,6 +248,16 @@ export const stepSettings = {
   deleteLabel: (title: string) => `Excluir etapa: ${title}`,
   deleteConfirmation: 'Excluir esta etapa?',
   titleRequired: 'Informe o nome da etapa.',
+  realtimePaused: 'As atualizações em tempo real estão pausadas. Alterações da equipe podem não aparecer até você recarregar.',
+}
+
+export const deadlineSettings = {
+  title: 'Prazos',
+  description: 'Defina quando um card aberto passa a ser considerado atrasado.',
+  overdueAfterDays: 'Dias para considerar atrasado',
+  overdueAfterDaysHelp: 'Um card aberto fica atrasado quando a data de início passa este número de dias.',
+  loading: 'Carregando os prazos',
+  invalidDays: (minimumDays: number, maximumDays: number) => `Informe um número inteiro entre ${minimumDays} e ${maximumDays}.`,
   realtimePaused: 'As atualizações em tempo real estão pausadas. Alterações da equipe podem não aparecer até você recarregar.',
 }
 
@@ -372,6 +392,11 @@ export const serviceErrors = {
   attachmentDeleteMissing: 'Não foi possível excluir o arquivo porque ele não existe mais ou você não tem permissão.',
   cardAttachmentsDelete: 'Não foi possível excluir os anexos do card. Tente novamente.',
   attachmentLink: 'Não foi possível gerar um link para este arquivo. Tente novamente.',
+  cardCoverSave: 'Não foi possível atualizar a capa do card. Tente novamente.',
+  coversLoad: 'Não foi possível carregar as capas dos cards.',
+  teamSettingsLoad: 'Não foi possível carregar as configurações de prazo. Tente novamente.',
+  teamSettingsSave: 'Não foi possível salvar as configurações de prazo. Tente novamente.',
+  teamSettingsSaveMissing: 'Não foi possível salvar porque as configurações não existem ou você não tem permissão.',
   thumbnailsLoad: 'Não foi possível carregar as prévias das imagens.',
   stepsLoad: 'Não foi possível carregar as etapas de implantação. Tente novamente.',
   stepCreate: 'Não foi possível adicionar a etapa. Tente novamente.',

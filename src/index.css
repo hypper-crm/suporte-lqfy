@@ -60,9 +60,6 @@
     --z-drawer: 40;
     --z-overlay: 50;
     --z-toast: 60;
-
-    /* Height of the mobile bottom tab bar, without the safe area. */
-    --mobile-tab-bar-height: 4rem;
   }
 
   html,
@@ -128,11 +125,6 @@
 
 @utility z-toast {
   z-index: var(--z-toast);
-}
-
-/* Keeps page content clear of the fixed mobile tab bar. */
-@utility pb-mobile-tab-bar {
-  padding-bottom: calc(var(--mobile-tab-bar-height) + env(safe-area-inset-bottom));
 }
 
 /* Section labels and table headers. */

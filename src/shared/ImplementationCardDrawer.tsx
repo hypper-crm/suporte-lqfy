@@ -1,10 +1,12 @@
 import { ChecklistSection, type ChecklistStatus } from '../components/checklist/ChecklistSection'
+import { OverdueBadge } from '../components/board/OverdueBadge'
 import { Drawer } from '../components/ui/Drawer'
 import type { CardChecklistActions } from '../hooks/useCardTasks'
 import { useCardDrawer, type CardDrawerProps } from '../hooks/useCardDrawer'
 import { cardDetails } from '../i18n/pt-BR'
 import type { Card, CardTask, Profile } from '../types/database'
 import { AttachmentsSection } from './cardDetails/AttachmentsSection'
+import { CardCoverSection } from './cardDetails/CardCoverSection'
 import { CardDetailsForm, CardSaveButton } from './cardDetails/CardDetailsForm'
 import {
   CardAssigneesField,
@@ -36,8 +38,8 @@ function ImplementationCardContent({
   checklistActions,
   ...drawerProps
 }: ImplementationCardContentProps) {
-  const { card, clients } = drawerProps
-  const { form, linkedClient, requestClose, deleteCard } = useCardDrawer(drawerProps)
+  const { card, clients, overdueDayCount } = drawerProps
+  const { form, linkedClient, requestClose, updateCover, deleteCard } = useCardDrawer(drawerProps)
 
   return (
     <Drawer
@@ -45,6 +47,7 @@ function ImplementationCardContent({
       description={card.title}
       onClose={requestClose}
       headerAction={<CardSaveButton form={form} />}
+      headerBadges={overdueDayCount !== undefined && <OverdueBadge dayCount={overdueDayCount} />}
     >
       <ClientInfoPanel client={linkedClient} />
       <CardDetailsForm form={form}>
@@ -61,7 +64,13 @@ function ImplementationCardContent({
         status={checklistStatus}
         actions={checklistActions}
       />
-      <AttachmentsSection cardId={card.id} currentUserId={currentUserId} />
+      <CardCoverSection card={card} onUpdateCover={updateCover} />
+      <AttachmentsSection
+        cardId={card.id}
+        currentUserId={currentUserId}
+        coverAttachmentId={card.cover_attachment_id}
+        onUpdateCover={updateCover}
+      />
       <DeleteCardSection cardTitle={card.title} onConfirm={deleteCard} />
     </Drawer>
   )

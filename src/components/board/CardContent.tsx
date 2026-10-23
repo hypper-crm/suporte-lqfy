@@ -1,14 +1,17 @@
 import { CalendarDays } from 'lucide-react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
 import { boards } from '../../i18n/pt-BR'
+import type { CardCoverImage } from '../../lib/cardCover'
 import { formatDate } from '../../lib/formatting'
 import type { ColumnStatus } from '../../types/board'
 import type { Card, Client } from '../../types/database'
 import type { AvatarStackPerson } from '../ui/AvatarStack'
 import { CardAssignees } from './CardAssignees'
+import { CardCover } from './CardCover'
 import { CardTaskProgress } from './CardTaskProgress'
 import { ColumnStatusBadge } from './ColumnStatusBadge'
 import { ElapsedTimeBadge } from './ElapsedTimeBadge'
+import { OverdueBadge } from './OverdueBadge'
 import { SupportCardLabels } from './SupportCardLabels'
 
 type CardAppearance = 'default' | 'dragOverlay' | 'placeholder'
@@ -30,17 +33,21 @@ export type CardContentProps = {
   taskProgress?: TaskProgress
   // Implementation cards only. The column the card is shown in.
   columnStatus?: ColumnStatus
+  // Days since the start date, only when the card is overdue.
+  overdueDayCount?: number
+  // Undefined when the card has no cover.
+  cover?: CardCoverImage
   appearance?: CardAppearance
 }
 
-type CardBodyProps = Omit<CardContentProps, 'appearance'>
+type CardBodyProps = Omit<CardContentProps, 'appearance' | 'cover'>
 
-function SupportCardBody({ card, client, assignees }: CardBodyProps) {
+function SupportCardBody({ card, client, assignees, overdueDayCount }: CardBodyProps) {
   const startDate = formatDate(card.start_date)
 
   return (
     <>
-      <SupportCardLabels priority={card.priority} requestType={card.request_type} />
+      <SupportCardLabels priority={card.priority} requestType={card.request_type} overdueDayCount={overdueDayCount} />
       <div className="flex flex-col gap-1">
         <p className="text-sm leading-snug font-medium break-words">{card.title}</p>
         <p className={`truncate text-xs ${client ? 'text-muted' : 'text-subtle'}`}>{client?.name ?? boards.card.noClient}</p>
@@ -56,7 +63,7 @@ function SupportCardBody({ card, client, assignees }: CardBodyProps) {
   )
 }
 
-function ImplementationCardBody({ card, client, assignees, taskProgress, columnStatus }: CardBodyProps) {
+function ImplementationCardBody({ card, client, assignees, taskProgress, columnStatus, overdueDayCount }: CardBodyProps) {
   return (
     <>
       <div className="flex flex-col gap-1">
@@ -64,9 +71,10 @@ function ImplementationCardBody({ card, client, assignees, taskProgress, columnS
         {card.description && <p className="line-clamp-2 text-xs leading-relaxed break-words text-muted">{card.description}</p>}
       </div>
       {(card.start_date || columnStatus) && (
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           <ElapsedTimeBadge startDate={card.start_date} />
           {columnStatus && <ColumnStatusBadge status={columnStatus} />}
+          <OverdueBadge dayCount={overdueDayCount} />
         </div>
       )}
       <div className="flex items-center justify-between gap-2 border-t border-border pt-2.5">
@@ -77,15 +85,19 @@ function ImplementationCardBody({ card, client, assignees, taskProgress, columnS
   )
 }
 
-export function CardContent({ appearance = 'default', ...bodyProps }: CardContentProps) {
+export function CardContent({ appearance = 'default', cover, ...bodyProps }: CardContentProps) {
   return (
+    // Overflow is clipped so the cover follows the card's rounded top corners.
     <div
       data-drag-lift={appearance === 'dragOverlay' ? '' : undefined}
-      className={`flex flex-col rounded-card border p-3.5 text-left ${appearanceClassNames[appearance]}`}
+      className={`flex flex-col overflow-hidden rounded-card border text-left ${appearanceClassNames[appearance]}`}
     >
       {/* The placeholder keeps the card's size but hides its content. */}
-      <div className={`flex flex-col gap-3 ${appearance === 'placeholder' ? 'invisible' : ''}`}>
-        {bodyProps.card.board === 'support' ? <SupportCardBody {...bodyProps} /> : <ImplementationCardBody {...bodyProps} />}
+      <div className={`flex flex-col ${appearance === 'placeholder' ? 'invisible' : ''}`}>
+        {cover && <CardCover cover={cover} />}
+        <div className="flex flex-col gap-3 p-3.5">
+          {bodyProps.card.board === 'support' ? <SupportCardBody {...bodyProps} /> : <ImplementationCardBody {...bodyProps} />}
+        </div>
       </div>
     </div>
   )

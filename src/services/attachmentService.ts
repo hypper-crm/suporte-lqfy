@@ -15,6 +15,9 @@ const signedUrlExpiryInSeconds = 60
 // Thumbnails stay on screen while the panel is open, so their links live a little longer.
 const thumbnailUrlExpiryInSeconds = 600
 
+// Card covers stay on the board for as long as it is open. Their links are renewed before they expire.
+export const coverUrlExpiryInSeconds = 3600
+
 function optionalString(value: unknown): string | null {
   return typeof value === 'string' ? value : null
 }
@@ -111,6 +114,22 @@ export async function getAttachmentUrl(storagePath: string, downloadFileName?: s
 export async function getThumbnailUrls(storagePaths: string[]): Promise<Record<string, string>> {
   const { data, error } = await supabase.storage.from(bucketName).createSignedUrls(storagePaths, thumbnailUrlExpiryInSeconds)
   if (error) throw new Error(serviceErrors.thumbnailsLoad)
+  return Object.fromEntries(
+    data.flatMap((entry) => (entry.path && entry.signedUrl && !entry.error ? [[entry.path, entry.signedUrl]] : [])),
+  )
+}
+
+// Returns the storage paths of the given attachments, keyed by attachment id.
+export async function getAttachmentStoragePaths(attachmentIds: string[]): Promise<Record<string, string>> {
+  const { data, error } = await supabase.from('card_attachments').select('id, storage_path').in('id', attachmentIds)
+  if (error) throw new Error(serviceErrors.coversLoad)
+  return Object.fromEntries(data.map((record) => [String(record.id), String(record.storage_path)]))
+}
+
+// Signs every cover of a board in a single request. Returns signed URLs keyed by storage path.
+export async function getCoverUrls(storagePaths: string[]): Promise<Record<string, string>> {
+  const { data, error } = await supabase.storage.from(bucketName).createSignedUrls(storagePaths, coverUrlExpiryInSeconds)
+  if (error) throw new Error(serviceErrors.coversLoad)
   return Object.fromEntries(
     data.flatMap((entry) => (entry.path && entry.signedUrl && !entry.error ? [[entry.path, entry.signedUrl]] : [])),
   )

@@ -7,25 +7,22 @@ import { MetricChip } from '../ui/MetricChip'
 type BoardMetricChipsProps = {
   columns: BoardColumn[]
   cards: Card[]
-  assigneeIdsByCardId: Map<string, string[]>
+  overdueDayCounts: Map<string, number>
 }
 
-// A single row that scrolls sideways on narrow screens instead of wrapping, so the board below never moves down.
-export function BoardMetricChips({ columns, cards, assigneeIdsByCardId }: BoardMetricChipsProps) {
-  const summary = useMemo(() => summarizeBoard(columns, cards, assigneeIdsByCardId), [columns, cards, assigneeIdsByCardId])
+// Three equal columns in a single row: they never scroll, wrap or grow taller.
+export function BoardMetricChips({ columns, cards, overdueDayCounts }: BoardMetricChipsProps) {
+  const summary = useMemo(() => summarizeBoard(columns, cards, overdueDayCounts), [columns, cards, overdueDayCounts])
 
   return (
-    <dl aria-label={boards.summary.label} className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain px-4 md:px-8">
-      <MetricChip label={boards.summary.openCards} value={summary.openCardCount} description={boards.summary.openCardsCaption} />
+    <dl aria-label={boards.summary.label} className="grid shrink-0 grid-cols-3 gap-2 px-4 md:px-8">
+      <MetricChip label={boards.summary.open} value={summary.openCount} description={boards.summary.openCaption} />
+      <MetricChip label={boards.summary.done} value={summary.doneCount} description={boards.summary.doneCaption} />
       <MetricChip
-        label={boards.summary.withoutAssignee}
-        value={summary.unassignedOpenCardCount}
-        description={boards.summary.withoutAssigneeCaption}
-      />
-      <MetricChip
-        label={boards.summary.doneThisWeek}
-        value={summary.doneThisWeekCount}
-        description={boards.summary.doneThisWeekCaption}
+        label={boards.summary.overdue}
+        value={summary.overdueCount}
+        description={boards.summary.overdueCaption}
+        isWarning
       />
     </dl>
   )

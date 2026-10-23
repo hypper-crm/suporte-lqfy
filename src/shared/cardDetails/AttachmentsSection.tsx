@@ -1,6 +1,8 @@
 import { useCardAttachments } from '../../hooks/useCardAttachments'
 import { attachments as attachmentStrings, common } from '../../i18n/pt-BR'
 import { isImageAttachment } from '../../lib/attachmentFiles'
+import type { CardCoverInput } from '../../types/board'
+import type { CardAttachment } from '../../types/database'
 import { Button } from '../../components/ui/Button'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { StatusMessage } from '../../components/ui/StatusMessage'
@@ -12,11 +14,21 @@ import { ImageAttachmentGallery } from './ImageAttachmentGallery'
 type AttachmentsSectionProps = {
   cardId: string
   currentUserId: string
+  coverAttachmentId: string | null
+  onUpdateCover: (input: CardCoverInput) => Promise<void>
 }
 
-export function AttachmentsSection({ cardId, currentUserId }: AttachmentsSectionProps) {
+export function AttachmentsSection({ cardId, currentUserId, coverAttachmentId, onUpdateCover }: AttachmentsSectionProps) {
   const { attachments, uploads, isLoading, loadErrorMessage, isRealtimeDisconnected, reload, uploadFiles, dismissUpload, deleteAttachment } =
     useCardAttachments(cardId, currentUserId)
+
+  const setAsCover = (attachmentId: string) => onUpdateCover({ coverAttachmentId: attachmentId })
+
+  // The cover is cleared first, so the card never points to a deleted attachment.
+  async function deleteImageAttachment(attachment: CardAttachment) {
+    if (attachment.id === coverAttachmentId) await onUpdateCover({ coverAttachmentId: null })
+    await deleteAttachment(attachment)
+  }
 
   const imageAttachments = attachments.filter(isImageAttachment)
   const fileAttachments = attachments.filter((attachment) => !isImageAttachment(attachment))
@@ -46,7 +58,14 @@ export function AttachmentsSection({ cardId, currentUserId }: AttachmentsSection
 
     return (
       <>
-        {imageAttachments.length > 0 && <ImageAttachmentGallery attachments={imageAttachments} onDelete={deleteAttachment} />}
+        {imageAttachments.length > 0 && (
+          <ImageAttachmentGallery
+            attachments={imageAttachments}
+            coverAttachmentId={coverAttachmentId}
+            onUseAsCover={setAsCover}
+            onDelete={deleteImageAttachment}
+          />
+        )}
         {fileAttachments.length > 0 && <FileAttachmentList attachments={fileAttachments} onDelete={deleteAttachment} />}
       </>
     )

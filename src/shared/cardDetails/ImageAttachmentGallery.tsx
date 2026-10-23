@@ -11,10 +11,12 @@ import { ImageViewer } from './ImageViewer'
 
 type ImageAttachmentGalleryProps = {
   attachments: CardAttachment[]
+  coverAttachmentId: string | null
+  onUseAsCover: (attachmentId: string) => Promise<void>
   onDelete: (attachment: CardAttachment) => Promise<void>
 }
 
-export function ImageAttachmentGallery({ attachments, onDelete }: ImageAttachmentGalleryProps) {
+export function ImageAttachmentGallery({ attachments, coverAttachmentId, onUseAsCover, onDelete }: ImageAttachmentGalleryProps) {
   const { thumbnailUrls, errorMessage } = useAttachmentThumbnails(attachments)
   const [viewedAttachment, setViewedAttachment] = useState<CardAttachment | null>(null)
 
@@ -52,7 +54,11 @@ export function ImageAttachmentGallery({ attachments, onDelete }: ImageAttachmen
                   {attachment.file_name}
                 </p>
                 <p className="text-xs text-muted">{formatFileSize(attachment.file_size)}</p>
-                <AttachmentActions attachment={attachment} onDelete={onDelete} />
+                <AttachmentActions
+                  attachment={attachment}
+                  cover={{ isCover: attachment.id === coverAttachmentId, onUseAsCover: () => onUseAsCover(attachment.id) }}
+                  onDelete={onDelete}
+                />
               </motion.li>
             )
           })}

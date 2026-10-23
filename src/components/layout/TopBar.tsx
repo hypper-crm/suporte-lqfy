@@ -1,7 +1,9 @@
-import { LogOut, Search, Users } from 'lucide-react'
+import { LogOut, Menu, Search, Users } from 'lucide-react'
+import type { Ref } from 'react'
 import { header } from '../../i18n/pt-BR'
 import { Button } from '../ui/Button'
 import { ConnectionStatusPill } from './ConnectionStatusPill'
+import { mobileSideMenuId } from './MobileSideMenu'
 import { UserIdentity } from './UserIdentity'
 
 type TopBarProps = {
@@ -10,27 +12,47 @@ type TopBarProps = {
   avatarUrl: string | null
   isProfileOpen: boolean
   isSigningOut: boolean
+  isMenuOpen: boolean
+  // Receives focus back when the mobile side menu closes.
+  menuButtonRef: Ref<HTMLButtonElement>
   onSignOut: () => void
   onOpenClients: () => void
   onOpenProfile: () => void
+  onOpenMenu: () => void
 }
 
-// Below the md breakpoint only the title, the avatar and the sign out button are shown.
+// Below the md breakpoint the bar shows the menu button, the centered title and the avatar.
 export function TopBar({
   title,
   displayName,
   avatarUrl,
   isProfileOpen,
   isSigningOut,
+  isMenuOpen,
+  menuButtonRef,
   onSignOut,
   onOpenClients,
   onOpenProfile,
+  onOpenMenu,
 }: TopBarProps) {
   return (
     <header className="sticky top-0 z-sticky shrink-0 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur md:static md:bg-background md:backdrop-blur-none">
-      <div className="flex h-14 items-center justify-between gap-3 px-4 md:h-16 md:px-8">
-        <h1 className="min-w-0 truncate text-lg font-semibold whitespace-nowrap">{title}</h1>
-        <div className="flex shrink-0 items-center gap-2 md:gap-4">
+      <div className="grid h-14 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 px-2 md:flex md:h-16 md:justify-between md:gap-3 md:px-8">
+        <Button
+          ref={menuButtonRef}
+          variant="ghost"
+          size="icon"
+          aria-label={header.openMenu}
+          aria-haspopup="dialog"
+          aria-expanded={isMenuOpen}
+          aria-controls={isMenuOpen ? mobileSideMenuId : undefined}
+          onClick={onOpenMenu}
+          className="md:hidden"
+        >
+          <Menu aria-hidden="true" className="size-5" />
+        </Button>
+        <h1 className="min-w-0 truncate text-center text-lg font-semibold whitespace-nowrap md:text-left">{title}</h1>
+        <div className="flex shrink-0 items-center justify-self-end gap-2 md:gap-4">
           {/* Visual only for now. */}
           <div
             aria-hidden="true"
@@ -49,6 +71,7 @@ export function TopBar({
           </div>
           <div className="hidden h-6 w-px bg-border md:block" />
           <UserIdentity displayName={displayName} avatarUrl={avatarUrl} isProfileOpen={isProfileOpen} onOpenProfile={onOpenProfile} />
+          {/* Below the md breakpoint signing out is in the side menu. */}
           <Button
             variant="ghost"
             size="icon"
@@ -56,6 +79,7 @@ export function TopBar({
             title={header.signOut}
             onClick={onSignOut}
             disabled={isSigningOut}
+            className="max-md:hidden"
           >
             <LogOut aria-hidden="true" className="size-4" />
           </Button>

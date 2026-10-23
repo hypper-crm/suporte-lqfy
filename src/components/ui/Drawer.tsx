@@ -13,10 +13,12 @@ type DrawerProps = {
   footer?: ReactNode
   // Shown next to the close button below the md breakpoint, usually the save button.
   headerAction?: ReactNode
+  // Badges shown under the title.
+  headerBadges?: ReactNode
 }
 
 // Render inside AnimatePresence so the drawer can animate out.
-export function Drawer({ title, description, onClose, children, footer, headerAction }: DrawerProps) {
+export function Drawer({ title, description, onClose, children, footer, headerAction, headerBadges }: DrawerProps) {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       // Overlays opened above the drawer mark the event as handled.
@@ -51,6 +53,7 @@ export function Drawer({ title, description, onClose, children, footer, headerAc
           <div className="flex min-w-0 flex-col gap-1 max-md:self-center">
             <h2 className="truncate text-lg font-semibold">{title}</h2>
             {description && <p className="truncate text-sm text-muted">{description}</p>}
+            {headerBadges && <div className="flex flex-wrap items-center gap-1.5 pt-1">{headerBadges}</div>}
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {headerAction && <div className="md:hidden">{headerAction}</div>}

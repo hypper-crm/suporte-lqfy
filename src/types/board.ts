@@ -1,6 +1,6 @@
 import type { Board, BoardColumn, Card, CardAssignee, CardPriority, CardRequestType, CardTask } from './database'
 
-export type AppScreen = Board | 'clients' | 'stepSettings' | 'profile'
+export type AppScreen = Board | 'clients' | 'stepSettings' | 'deadlineSettings' | 'profile'
 
 export type NewCardInput = {
   board: Board
@@ -40,6 +40,12 @@ export type CardUpdateInput = {
   clientId: string | null
   priority: CardPriority | null
   requestType: CardRequestType | null
+}
+
+// Cover settings of a card. Fields left undefined are not changed.
+export type CardCoverInput = {
+  coverAttachmentId?: string | null
+  showClientCover?: boolean
 }
 
 // Values saved from the card details form: the `cards` row plus the rows of `card_assignees`.
