@@ -1,0 +1,334 @@
+// Single source of user-facing text. Components and services import their strings from here.
+
+import type { CardPriority, CardRequestType } from '../types/database'
+
+export const productName = 'Painel de Suporte e Implementação'
+
+export const productShortName = 'Painel'
+
+export const common = {
+  tryAgain: 'Tentar novamente',
+  reload: 'Recarregar',
+  dismiss: 'Dispensar',
+  cancel: 'Cancelar',
+  close: 'Fechar',
+  save: 'Salvar',
+  saving: 'Salvando…',
+  saved: 'Salvo',
+  delete: 'Excluir',
+  deleting: 'Excluindo…',
+  yesDelete: 'Sim, excluir',
+  edit: 'Editar',
+  emptyValue: '—',
+  unknownError: 'Ocorreu um erro inesperado. Tente novamente.',
+  dragToReorder: 'Arraste para reordenar',
+}
+
+export const appStart = {
+  failedTitle: 'Não foi possível iniciar o painel',
+  failedMessage: 'Ocorreu um erro inesperado ao carregar o aplicativo.',
+  missingEnvironmentVariables: (variableNames: string) =>
+    `Variáveis de ambiente do Supabase ausentes: ${variableNames}. Adicione-as ao arquivo .env na raiz do projeto e gere o aplicativo novamente.`,
+  loadingSession: 'Carregando sua sessão…',
+}
+
+export const screens = {
+  support: 'Suporte',
+  implementation: 'Implementação',
+  clients: 'Clientes',
+  stepSettings: 'Etapas de implantação',
+  navigationLabel: 'Telas',
+  boardsSection: 'Quadros',
+  directorySection: 'Cadastros',
+  settingsSection: 'Configurações',
+}
+
+export const header = {
+  searchPlaceholder: 'Buscar…',
+  searchShortcut: 'Ctrl K',
+  clients: 'Clientes',
+  online: 'Online',
+  offline: 'Offline',
+  teamMember: 'Membro da equipe',
+  signOut: 'Sair',
+  signingOut: 'Saindo…',
+  profileNotFound: 'Seu perfil não foi encontrado. Fale com um administrador.',
+}
+
+export const auth = {
+  welcomeTitle: 'Bem-vindo de volta',
+  welcomeDescription: 'Entre para continuar.',
+  modeTabsLabel: 'Entrar ou criar uma conta',
+  signIn: 'Entrar',
+  signingIn: 'Entrando…',
+  createAccount: 'Criar conta',
+  creatingAccount: 'Criando conta…',
+  fullName: 'Nome completo',
+  email: 'E-mail',
+  password: 'Senha',
+  passwordPlaceholder: (minimumLength: number) => `Pelo menos ${minimumLength} caracteres`,
+  accountCreatedSignInManually:
+    'Sua conta foi criada, mas não foi possível entrar automaticamente. Entre com seu e-mail e senha.',
+  validation: {
+    fullNameRequired: 'Informe seu nome completo.',
+    emailRequired: 'Informe o e-mail.',
+    emailInvalid: 'Informe um e-mail válido.',
+    passwordRequired: 'Informe a senha.',
+    passwordTooShort: (minimumLength: number) => `A senha deve ter pelo menos ${minimumLength} caracteres.`,
+  },
+  errors: {
+    invalidCredentials: 'E-mail ou senha incorretos.',
+    userAlreadyExists: 'Já existe uma conta com este e-mail. Entre em vez disso.',
+    weakPassword: 'A senha é muito fraca. Escolha uma senha mais longa ou mais complexa.',
+    emailInvalid: 'O endereço de e-mail não é válido.',
+    emailNotConfirmed: 'Este e-mail ainda não foi confirmado.',
+    signupDisabled: 'A criação de novas contas está desativada no momento.',
+    rateLimited: 'Muitas tentativas. Aguarde um momento e tente novamente.',
+    samePassword: 'A nova senha deve ser diferente da atual.',
+    sessionExpired: 'Sua sessão expirou. Entre novamente.',
+    network: 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente.',
+    signUpFailed: 'Não foi possível criar sua conta. Tente novamente.',
+    signInFailed: 'Não foi possível entrar. Tente novamente.',
+    signOutFailed: 'Não foi possível sair. Tente novamente.',
+    sessionLoadFailed: 'Não foi possível carregar sua sessão. Entre novamente.',
+  },
+}
+
+export const boards = {
+  boardTabsLabel: 'Quadros',
+  titles: {
+    support: 'Quadro de suporte',
+    implementation: 'Quadro de implementação',
+  },
+  descriptions: {
+    support: 'Solicitações de clientes em todas as etapas do suporte.',
+    implementation: 'Implantação de clientes, do início até a entrada em produção.',
+  },
+  loading: 'Carregando o quadro',
+  noColumns: 'Este quadro ainda não tem colunas.',
+  realtimePaused: 'As atualizações em tempo real estão pausadas. Alterações da equipe podem não aparecer até você recarregar.',
+  summary: {
+    openCards: 'Cards abertos',
+    openCardsCaption: 'Fora de uma coluna de concluídos',
+    withoutAssignee: 'Sem responsável',
+    withoutAssigneeCaption: 'Cards abertos ainda sem dono',
+    doneThisWeek: 'Concluídos na semana',
+    doneThisWeekCaption: 'Movidos para concluídos desde segunda-feira',
+  },
+  card: {
+    ariaLabel: (title: string) => `Card: ${title}`,
+    noClient: 'Sem cliente',
+    noStartDate: 'Sem data de início',
+    unassigned: 'Sem responsável',
+    unknownTeamMember: 'Membro da equipe desconhecido',
+    taskProgressLabel: (doneCount: number, totalCount: number) => `${doneCount} de ${totalCount} etapas concluídas`,
+  },
+  addCard: {
+    open: 'Adicionar card',
+    titleLabel: 'Título do card',
+    clientLabel: 'Cliente',
+    noClient: 'Sem cliente',
+    submit: 'Adicionar card',
+    submitting: 'Adicionando…',
+    titleRequired: 'Informe um título para o card.',
+  },
+}
+
+export const priorityLabels: Record<CardPriority, string> = {
+  low: 'Baixa',
+  medium: 'Média',
+  high: 'Alta',
+  urgent: 'Urgente',
+}
+
+export const requestTypeLabels: Record<CardRequestType, string> = {
+  question: 'Dúvida',
+  bug: 'Erro',
+  request: 'Solicitação',
+  other: 'Outro',
+}
+
+export const cardDetails = {
+  title: 'Detalhes do card',
+  missingCard: 'Este card não está mais neste quadro. Alguém da equipe pode tê-lo excluído ou movido.',
+  unsavedChangesConfirmation: 'Você tem alterações não salvas. Deseja descartá-las?',
+  remoteChanges: 'Alguém da equipe alterou este card enquanto você editava. Salvar vai sobrescrever as alterações dessa pessoa.',
+  loadLatestVersion: 'Descartar minhas edições e carregar a versão mais recente',
+  fields: {
+    title: 'Título',
+    description: 'Descrição',
+    startDate: 'Data de início',
+    client: 'Cliente',
+    assignee: 'Responsável',
+    priority: 'Prioridade',
+    requestType: 'Tipo de solicitação',
+  },
+  noClient: 'Sem cliente',
+  unknownClient: 'Cliente desconhecido',
+  unassigned: 'Sem responsável',
+  unknownTeamMember: 'Membro da equipe desconhecido',
+  unnamedTeamMember: 'Membro da equipe sem nome',
+  notSet: 'Não definido',
+  validation: {
+    titleRequired: 'Informe o título.',
+    titleTooLong: (maximumLength: number) => `O título deve ter no máximo ${maximumLength} caracteres.`,
+  },
+  clientPanel: {
+    title: 'Cliente',
+    name: 'Nome',
+    email: 'E-mail',
+    niche: 'Nicho',
+    payInRate: 'Taxa de pay-in',
+    payOutRate: 'Taxa de pay-out',
+    noClientLinked: 'Nenhum cliente vinculado',
+  },
+  deleteCard: {
+    open: 'Excluir card',
+    confirmation: (cardTitle: string) => `Excluir “${cardTitle}”? Esta ação não pode ser desfeita. Todos os anexos também serão excluídos.`,
+    confirm: 'Sim, excluir card',
+  },
+}
+
+export const checklist = {
+  title: 'Checklist',
+  progress: (doneCount: number, totalCount: number) => `${doneCount} de ${totalCount} concluídas`,
+  progressBarLabel: 'Progresso do checklist',
+  empty: 'Nenhuma tarefa neste checklist.',
+  completedBy: (name: string, dateTime: string) => `Concluída por ${name} em ${dateTime}`,
+  unknownTeamMember: 'membro da equipe desconhecido',
+  addPlaceholder: 'Adicionar tarefa e pressionar Enter',
+  addLabel: 'Nova tarefa',
+  renameLabel: (title: string) => `Renomear tarefa: ${title}`,
+  editLabel: 'Nome da tarefa',
+  toggleLabel: (title: string) => `Concluir tarefa: ${title}`,
+  deleteLabel: (title: string) => `Excluir tarefa: ${title}`,
+  deleteConfirmation: 'Excluir esta tarefa?',
+  titleRequired: 'Informe o nome da tarefa.',
+  realtimePaused: 'As atualizações em tempo real estão pausadas. Alterações da equipe no checklist podem não aparecer.',
+}
+
+export const stepSettings = {
+  title: 'Etapas de implantação',
+  description: 'Estas etapas são copiadas para cada novo card de Implementação.',
+  deleteNote: 'Cards já criados não são alterados.',
+  loading: 'Carregando as etapas',
+  empty: 'Nenhuma etapa cadastrada.',
+  addPlaceholder: 'Adicionar etapa e pressionar Enter',
+  addLabel: 'Nova etapa',
+  renameLabel: (title: string) => `Renomear etapa: ${title}`,
+  editLabel: 'Nome da etapa',
+  deleteLabel: (title: string) => `Excluir etapa: ${title}`,
+  deleteConfirmation: 'Excluir esta etapa?',
+  titleRequired: 'Informe o nome da etapa.',
+  realtimePaused: 'As atualizações em tempo real estão pausadas. Alterações da equipe podem não aparecer até você recarregar.',
+}
+
+export const attachments = {
+  title: 'Anexos',
+  loading: 'Carregando anexos',
+  empty: 'Nenhum anexo ainda.',
+  realtimePaused: 'As atualizações em tempo real estão pausadas. Novos anexos da equipe podem não aparecer.',
+  dropHint: 'Arraste arquivos para cá, ou',
+  upload: 'Enviar arquivos',
+  acceptedTypes: 'PNG, JPG, WEBP, GIF, PDF, DOC/DOCX, XLS/XLSX, CSV, TXT ou ZIP, até 20 MB cada.',
+  uploading: (fileName: string, fileSize: string) => `Enviando ${fileName} (${fileSize})…`,
+  open: 'Abrir',
+  opening: 'Abrindo…',
+  download: 'Baixar',
+  preparing: 'Preparando…',
+  deleteConfirmation: 'Excluir este arquivo?',
+  viewFullSize: (fileName: string) => `Ver ${fileName} em tamanho real`,
+  noPreview: 'Sem prévia',
+  loadingImage: 'Carregando imagem',
+  fileTypeFallback: 'ARQUIVO',
+  rejectedType: (fileName: string) => `“${fileName}” não foi enviado: este tipo de arquivo não é permitido.`,
+  rejectedSize: (fileName: string) => `“${fileName}” não foi enviado: os arquivos devem ter no máximo 20 MB.`,
+}
+
+export const clients = {
+  title: 'Clientes',
+  description: 'Todos os clientes atendidos pela equipe, com suas taxas de pay-in e pay-out.',
+  newClient: 'Novo cliente',
+  searchLabel: 'Buscar clientes por nome ou e-mail',
+  searchPlaceholder: 'Buscar por nome ou e-mail…',
+  empty: 'Nenhum cliente ainda.',
+  noMatches: (searchText: string) => `Nenhum cliente corresponde a “${searchText}”.`,
+  loading: 'Carregando clientes',
+  realtimePaused: 'As atualizações em tempo real estão pausadas. Alterações da equipe podem não aparecer até você recarregar.',
+  notFoundTitle: 'Cliente não encontrado',
+  notFoundMessage: 'Este cliente não existe mais. Alguém da equipe pode tê-lo excluído.',
+  columns: {
+    name: 'Nome',
+    email: 'E-mail',
+    niche: 'Nicho',
+    payInRate: 'Taxa de pay-in',
+    payOutRate: 'Taxa de pay-out',
+    actions: 'Ações',
+  },
+  editLabel: (clientName: string) => `Editar ${clientName}`,
+  form: {
+    createTitle: 'Novo cliente',
+    createDescription: 'Adicione um cliente que a equipe possa vincular aos cards.',
+    editTitle: 'Editar cliente',
+    name: 'Nome',
+    email: 'E-mail (opcional)',
+    niche: 'Nicho (opcional)',
+    payInRate: 'Taxa de pay-in % (opcional)',
+    payOutRate: 'Taxa de pay-out % (opcional)',
+    ratePlaceholder: '0,00',
+    saveChanges: 'Salvar alterações',
+    create: 'Criar cliente',
+  },
+  validation: {
+    nameRequired: 'Informe o nome.',
+    nameTooLong: (maximumLength: number) => `O nome deve ter no máximo ${maximumLength} caracteres.`,
+    emailInvalid: 'Informe um e-mail válido.',
+    rateInvalid: 'Informe um número entre 0 e 100 com até duas casas decimais.',
+  },
+  deleteConfirmation: (clientName: string) =>
+    `Excluir “${clientName}”? Esta ação não pode ser desfeita. Os cards vinculados a este cliente continuarão nos quadros, mas sem cliente.`,
+  confirmDelete: 'Sim, excluir cliente',
+}
+
+// Messages raised by the services when a Supabase request fails.
+export const serviceErrors = {
+  profileLoad: 'Não foi possível carregar seu perfil. Tente novamente.',
+  profilesLoad: 'Não foi possível carregar os membros da equipe. Tente novamente.',
+  columnsLoad: 'Não foi possível carregar as colunas do quadro. Tente novamente.',
+  cardsLoad: 'Não foi possível carregar os cards. Tente novamente.',
+  cardCreate: 'Não foi possível criar o card. Tente novamente.',
+  cardMove: 'Não foi possível mover o card. Sua alteração foi desfeita.',
+  cardMoveMissing: 'Não foi possível mover o card porque ele não existe mais ou você não tem permissão. Sua alteração foi desfeita.',
+  cardSave: 'Não foi possível salvar o card. Tente novamente.',
+  cardSaveMissing: 'Não foi possível salvar o card porque ele não existe mais ou você não tem permissão.',
+  cardDelete: 'Não foi possível excluir o card. Tente novamente.',
+  cardDeleteMissing: 'Não foi possível excluir o card porque ele não existe mais ou você não tem permissão.',
+  clientsLoad: 'Não foi possível carregar os clientes. Tente novamente.',
+  clientCreate: 'Não foi possível criar o cliente. Tente novamente.',
+  clientSave: 'Não foi possível salvar o cliente. Tente novamente.',
+  clientSaveMissing: 'Não foi possível salvar o cliente porque ele não existe mais ou você não tem permissão.',
+  clientDuplicate: 'Já existe um cliente com estes dados.',
+  clientDelete: 'Não foi possível excluir o cliente. Tente novamente.',
+  clientDeleteMissing: 'Não foi possível excluir o cliente porque ele não existe mais ou você não tem permissão.',
+  attachmentsLoad: 'Não foi possível carregar os anexos. Tente novamente.',
+  attachmentUpload: (fileName: string) => `Não foi possível enviar “${fileName}”. Tente novamente.`,
+  attachmentRecord: (fileName: string) => `Não foi possível salvar “${fileName}”. Tente novamente.`,
+  attachmentDelete: 'Não foi possível excluir o arquivo. Tente novamente.',
+  attachmentDeleteMissing: 'Não foi possível excluir o arquivo porque ele não existe mais ou você não tem permissão.',
+  cardAttachmentsDelete: 'Não foi possível excluir os anexos do card. Tente novamente.',
+  attachmentLink: 'Não foi possível gerar um link para este arquivo. Tente novamente.',
+  thumbnailsLoad: 'Não foi possível carregar as prévias das imagens.',
+  stepsLoad: 'Não foi possível carregar as etapas de implantação. Tente novamente.',
+  stepCreate: 'Não foi possível adicionar a etapa. Tente novamente.',
+  stepSave: 'Não foi possível salvar a etapa. Tente novamente.',
+  stepSaveMissing: 'Não foi possível salvar a etapa porque ela não existe mais ou você não tem permissão.',
+  stepDelete: 'Não foi possível excluir a etapa. Tente novamente.',
+  stepDeleteMissing: 'Não foi possível excluir a etapa porque ela não existe mais ou você não tem permissão.',
+  tasksLoad: 'Não foi possível carregar os checklists. Tente novamente.',
+  taskCreate: 'Não foi possível adicionar a tarefa. Tente novamente.',
+  taskSave: 'Não foi possível salvar a tarefa. Sua alteração foi desfeita.',
+  taskSaveMissing: 'Não foi possível salvar a tarefa porque ela não existe mais ou você não tem permissão. Sua alteração foi desfeita.',
+  taskDelete: 'Não foi possível excluir a tarefa. Tente novamente.',
+  taskDeleteMissing: 'Não foi possível excluir a tarefa porque ela não existe mais ou você não tem permissão.',
+  checklistCopy: 'Não foi possível copiar as etapas de implantação para o novo card. O card não foi criado. Tente novamente.',
+}

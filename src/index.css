@@ -1,0 +1,122 @@
+@import "@fontsource-variable/inter";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #0a0b0d;
+  --color-surface: #111316;
+  --color-elevated: #15171b;
+  --color-hover: #1a1d22;
+  --color-border: #1f2227;
+  --color-border-strong: #2e333b;
+  --color-foreground: #f4f5f7;
+  --color-muted: #8b919c;
+  --color-subtle: #5c626c;
+  --color-accent: #2ee6a6;
+  --color-accent-strong: #5cefbd;
+  --color-on-accent: #03140d;
+  --color-danger: #f0506e;
+  --color-warning: #f5b942;
+
+  --radius-card: 12px;
+
+  --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-card-lift: card-lift 200ms var(--ease-fluid) forwards;
+
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes card-lift {
+    from {
+      transform: none;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+    }
+    to {
+      transform: scale(1.02) rotate(1.5deg);
+      box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.75);
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+
+  /* Interactive elements keep the default arrow cursor. */
+  button,
+  [role="button"],
+  [role="tab"],
+  a,
+  label,
+  select,
+  summary,
+  input[type="checkbox"] {
+    cursor: default;
+  }
+
+  ::selection {
+    background-color: rgb(46 230 166 / 0.25);
+  }
+
+  * {
+    scrollbar-color: var(--color-border-strong) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+/* Section labels and table headers. */
+@utility section-label {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+}
+
+@utility skeleton {
+  border-radius: 8px;
+  background-image: linear-gradient(90deg, #15171b 0%, #1e2126 50%, #15171b 100%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+@utility select-chevron {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b919c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .animate-card-lift {
+    animation: none;
+  }
+}
