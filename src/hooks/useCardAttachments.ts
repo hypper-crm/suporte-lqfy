@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { serviceErrors } from '../i18n/pt-BR'
-import { checkAttachmentFile } from '../lib/attachmentFiles'
+import { checkAttachmentFile, checkCoverImageFile } from '../lib/attachmentFiles'
 import {
   deleteAttachment as deleteAttachmentRequest,
   listAttachments,
@@ -10,14 +10,27 @@ import {
 import type { AttachmentUpload } from '../types/attachment'
 import type { CardAttachment } from '../types/database'
 
+// A refused file is reported for this long.
+const rejectionMessageDurationInMilliseconds = 4000
+
+type RejectionMessage = {
+  // Changes on every refusal, so a repeated message restarts its timer.
+  id: string
+  text: string
+}
+
 export type CardAttachmentsState = {
   attachments: CardAttachment[]
   uploads: AttachmentUpload[]
+  // Why the last picked file was refused, cleared after a few seconds.
+  rejectionMessage: string | null
   isLoading: boolean
   loadErrorMessage: string | null
   isRealtimeDisconnected: boolean
   reload: () => void
   uploadFiles: (files: File[]) => void
+  // Uploads an image to use as the card's cover. Rejects with the reason when the file is refused or fails.
+  uploadCoverImage: (file: File) => Promise<CardAttachment>
   dismissUpload: (uploadId: string) => void
   deleteAttachment: (attachment: CardAttachment) => Promise<void>
 }
@@ -40,6 +53,7 @@ function removeAttachment(attachments: CardAttachment[], attachmentId: string): 
 export function useCardAttachments(cardId: string, currentUserId: string): CardAttachmentsState {
   const [attachments, setAttachments] = useState<CardAttachment[]>([])
   const [uploads, setUploads] = useState<AttachmentUpload[]>([])
+  const [rejectionMessage, setRejectionMessage] = useState<RejectionMessage | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null)
   const [isRealtimeDisconnected, setIsRealtimeDisconnected] = useState(false)
@@ -77,6 +91,12 @@ export function useCardAttachments(cardId: string, currentUserId: string): CardA
     }
   }, [cardId, reloadCount])
 
+  useEffect(() => {
+    if (!rejectionMessage) return
+    const timeoutId = window.setTimeout(() => setRejectionMessage(null), rejectionMessageDurationInMilliseconds)
+    return () => window.clearTimeout(timeoutId)
+  }, [rejectionMessage])
+
   const reload = useCallback(() => setReloadCount((count) => count + 1), [])
 
   const uploadFile = useCallback(
@@ -90,7 +110,7 @@ export function useCardAttachments(cardId: string, currentUserId: string): CardA
       }
       const check = checkAttachmentFile(file)
       if (!check.isAccepted) {
-        setUploads((current) => [...current, { ...upload, status: 'rejected', errorMessage: check.errorMessage }])
+        setRejectionMessage({ id: upload.id, text: check.errorMessage })
         return
       }
 
@@ -118,6 +138,17 @@ export function useCardAttachments(cardId: string, currentUserId: string): CardA
     [uploadFile],
   )
 
+  const uploadCoverImage = useCallback(
+    async (file: File) => {
+      const check = checkCoverImageFile(file)
+      if (!check.isAccepted) throw new Error(check.errorMessage)
+      const attachment = await uploadAttachment({ cardId, file, mimeType: check.mimeType, uploadedBy: currentUserId })
+      setAttachments((current) => upsertAttachment(current, attachment))
+      return attachment
+    },
+    [cardId, currentUserId],
+  )
+
   const dismissUpload = useCallback((uploadId: string) => {
     setUploads((current) => current.filter((upload) => upload.id !== uploadId))
   }, [])
@@ -130,11 +161,13 @@ export function useCardAttachments(cardId: string, currentUserId: string): CardA
   return {
     attachments,
     uploads,
+    rejectionMessage: rejectionMessage?.text ?? null,
     isLoading,
     loadErrorMessage,
     isRealtimeDisconnected,
     reload,
     uploadFiles,
+    uploadCoverImage,
     dismissUpload,
     deleteAttachment,
   }

@@ -4,12 +4,10 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { TaskProgress } from '../../hooks/useCardTasks'
 import { toAssigneePeople } from '../../lib/assignees'
 import type { CardCoverImage } from '../../lib/cardCover'
-import type { ColumnStatus } from '../../types/board'
-import type { ClientCoverChange, ClientInput } from '../../types/client'
+import type { ColumnStatus, NewCardFields } from '../../types/board'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
 import { Badge } from '../ui/Badge'
 import { AddCardForm } from './AddCardForm'
-import { AddImplementationCardForm } from './AddImplementationCardForm'
 import { SortableCard, type CardPresenceContext } from './SortableCard'
 
 type BoardColumnViewProps = {
@@ -19,14 +17,12 @@ type BoardColumnViewProps = {
   clientsById: Map<string, Client>
   assigneeIdsByCardId: Map<string, string[]>
   profilesById: Record<string, Profile>
-  // Implementation board only.
-  columnStatus: ColumnStatus | undefined
+  columnStatus: ColumnStatus
   progressByCardId: Map<string, TaskProgress>
   overdueDayCounts: Map<string, number>
   coversByCardId: Map<string, CardCoverImage>
   presenceContext: CardPresenceContext
-  onCreateCard: (columnId: string, title: string, clientId: string | null) => Promise<void>
-  onCreateClient: (input: ClientInput, coverChange: ClientCoverChange) => Promise<Client>
+  onCreateCard: (fields: NewCardFields) => Promise<void>
   onOpenCard: (cardId: string) => void
 }
 
@@ -43,7 +39,6 @@ export function BoardColumnView({
   coversByCardId,
   presenceContext,
   onCreateCard,
-  onCreateClient,
   onOpenCard,
 }: BoardColumnViewProps) {
   // The column itself is a drop target so cards can be dropped into an empty column.
@@ -79,17 +74,12 @@ export function BoardColumnView({
           </AnimatePresence>
         </motion.ul>
       </SortableContext>
-      <div className="px-2 pb-2">
-        {column.board === 'implementation' ? (
-          <AddImplementationCardForm
-            clients={clients}
-            onCreate={(title, clientId) => onCreateCard(column.id, title, clientId)}
-            onCreateClient={onCreateClient}
-          />
-        ) : (
-          <AddCardForm clients={clients} onCreate={(title, clientId) => onCreateCard(column.id, title, clientId)} />
-        )}
-      </div>
+      {/* Implementation cards are created with their client from the board header. */}
+      {column.board === 'support' && (
+        <div className="px-2 pb-2">
+          <AddCardForm clients={clients} onCreate={(title, clientId) => onCreateCard({ columnId: column.id, title, clientId })} />
+        </div>
+      )}
     </section>
   )
 }

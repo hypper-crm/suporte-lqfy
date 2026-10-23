@@ -8,10 +8,9 @@ import { useCardDrawer, type CardDrawerProps } from '../hooks/useCardDrawer'
 import type { ColumnStatus } from '../types/board'
 import type { Card, CardTask, Profile } from '../types/database'
 import { AttachmentsSection } from './cardDetails/AttachmentsSection'
-import { CardCoverSection } from './cardDetails/CardCoverSection'
 import { CardDetailsForm, CardSaveButton } from './cardDetails/CardDetailsForm'
-import { CardAssigneesField, CardClientField, CardStartDateField } from './cardDetails/CardFormFields'
-import { CardTitleDescriptionSection } from './cardDetails/CardTitleDescriptionSection'
+import { CardDrawerCoverSlot } from './cardDetails/CardDrawerCoverSlot'
+import { CardAssigneesField, CardClientField, CardDescriptionSection, CardStartDateField } from './cardDetails/CardFormFields'
 import { ClientInfoPanel } from './cardDetails/ClientInfoPanel'
 import { DeleteCardSection } from './cardDetails/DeleteCardSection'
 import { MissingCardDrawer } from './cardDetails/MissingCardDrawer'
@@ -19,7 +18,6 @@ import { MissingCardDrawer } from './cardDetails/MissingCardDrawer'
 type ImplementationCardContentProps = CardDrawerProps & {
   profiles: Profile[]
   profilesById: Record<string, Profile>
-  currentUserId: string
   // Sorted by position.
   tasks: CardTask[]
   checklistStatus: ChecklistStatus
@@ -31,15 +29,15 @@ type ImplementationCardContentProps = CardDrawerProps & {
 function ImplementationCardContent({
   profiles,
   profilesById,
-  currentUserId,
   tasks,
   checklistStatus,
   checklistActions,
   columnStatus,
   ...drawerProps
 }: ImplementationCardContentProps) {
-  const { card, clients, overdueDayCount } = drawerProps
-  const { form, linkedClient, requestClose, updateCover, deleteCard } = useCardDrawer(drawerProps)
+  const { card, clients, cover, overdueDayCount } = drawerProps
+  const drawer = useCardDrawer(drawerProps)
+  const { form, linkedClient, attachmentsState, requestClose, updateCover, deleteCard } = drawer
 
   const hasBadges = columnStatus !== undefined || overdueDayCount !== undefined
 
@@ -49,6 +47,7 @@ function ImplementationCardContent({
       title={linkedClient?.name ?? card.title}
       titleLeading={linkedClient && <Avatar fullName={linkedClient.name} imageUrl={linkedClient.cover_image_url} />}
       onClose={requestClose}
+      cover={<CardDrawerCoverSlot card={card} cover={cover} drawer={drawer} />}
       headerAction={<CardSaveButton form={form} />}
       headerBadges={
         hasBadges && (
@@ -64,7 +63,7 @@ function ImplementationCardContent({
         <CardAssigneesField form={form} profiles={profiles} />
         <CardStartDateField form={form} />
         <CardClientField form={form} clients={clients} />
-        <CardTitleDescriptionSection form={form} isTitleRequired={!form.values.clientId} />
+        <CardDescriptionSection form={form} />
       </CardDetailsForm>
       <ChecklistSection
         cardId={card.id}
@@ -73,13 +72,7 @@ function ImplementationCardContent({
         status={checklistStatus}
         actions={checklistActions}
       />
-      <CardCoverSection card={card} onUpdateCover={updateCover} />
-      <AttachmentsSection
-        cardId={card.id}
-        currentUserId={currentUserId}
-        coverAttachmentId={card.cover_attachment_id}
-        onUpdateCover={updateCover}
-      />
+      <AttachmentsSection attachmentsState={attachmentsState} coverAttachmentId={card.cover_attachment_id} onUpdateCover={updateCover} />
       <DeleteCardSection cardTitle={card.title} onConfirm={deleteCard} />
     </Drawer>
   )

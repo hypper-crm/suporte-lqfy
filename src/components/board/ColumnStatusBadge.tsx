@@ -1,12 +1,15 @@
 import { boards } from '../../i18n/pt-BR'
-import type { ColumnStatus, ColumnStatusTone } from '../../types/board'
+import type { ColumnStatus } from '../../types/board'
+import type { BoardColumnColor } from '../../types/database'
 import { Badge } from '../ui/Badge'
 
-const toneBadgeVariants = {
+const colorBadgeVariants = {
   neutral: 'neutral',
-  warning: 'warning',
-  success: 'success',
-} as const satisfies Record<ColumnStatusTone, string>
+  blue: 'info',
+  amber: 'warning',
+  green: 'success',
+  red: 'danger',
+} as const satisfies Record<BoardColumnColor, string>
 
 type ColumnStatusBadgeProps = {
   status: ColumnStatus
@@ -14,7 +17,7 @@ type ColumnStatusBadgeProps = {
 
 export function ColumnStatusBadge({ status }: ColumnStatusBadgeProps) {
   return (
-    <Badge variant={toneBadgeVariants[status.tone]} className="min-w-0">
+    <Badge variant={colorBadgeVariants[status.color]} className="min-w-0">
       <span className="truncate" title={boards.card.statusLabel(status.name)}>
         {status.name}
       </span>

@@ -1,25 +1,22 @@
 import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useState } from 'react'
-import type { CardDetailsFormState } from '../../hooks/useCardDetailsForm'
-import { cardDetails } from '../../i18n/pt-BR'
-import { CardDescriptionField, CardTitleField } from './CardFormFields'
+import { useId, useState, type ReactNode } from 'react'
 
-const contentId = 'card-title-description-content'
-
-type CardTitleDescriptionSectionProps = {
-  form: CardDetailsFormState
-  // The title can be left empty when the card has a client, whose name is then saved as the title.
-  isTitleRequired: boolean
+type CollapsibleSectionProps = {
+  title: string
+  // A short line under the title, such as the current value, shown while the section is closed.
+  preview?: string
+  // Keeps the section open, for example while a field inside it has an error.
+  isForcedOpen?: boolean
+  children: ReactNode
 }
 
-// Closed by default. The header shows the current title, so the user knows what is inside.
-export function CardTitleDescriptionSection({ form, isTitleRequired }: CardTitleDescriptionSectionProps) {
+// Closed by default.
+export function CollapsibleSection({ title, preview, isForcedOpen = false, children }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(false)
   const isReducedMotion = useReducedMotion()
-  // A title error is never hidden inside the closed section.
-  const isExpanded = isOpen || Boolean(form.titleErrorMessage)
-  const title = form.values.title.trim()
+  const contentId = useId()
+  const isExpanded = isOpen || isForcedOpen
   const collapsedHeight = isReducedMotion ? 'auto' : 0
 
   return (
@@ -32,8 +29,8 @@ export function CardTitleDescriptionSection({ form, isTitleRequired }: CardTitle
         className="flex items-center justify-between gap-3 rounded-card px-4 py-3 text-left outline-none transition-colors duration-200 ease-fluid hover:bg-hover focus-visible:ring-2 focus-visible:ring-accent/40"
       >
         <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="text-sm font-medium">{cardDetails.titleAndDescription}</span>
-          <span className={`truncate text-xs ${title ? 'text-muted' : 'text-subtle'}`}>{title || cardDetails.noTitle}</span>
+          <span className="text-sm font-medium">{title}</span>
+          {preview && !isExpanded && <span className="truncate text-xs text-muted">{preview}</span>}
         </span>
         <ChevronDown
           aria-hidden="true"
@@ -49,10 +46,7 @@ export function CardTitleDescriptionSection({ form, isTitleRequired }: CardTitle
             exit={{ height: collapsedHeight, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="flex flex-col gap-4 border-t border-border p-4">
-              <CardTitleField form={form} isRequired={isTitleRequired} />
-              <CardDescriptionField form={form} />
-            </div>
+            <div className="flex flex-col gap-4 border-t border-border p-4">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>

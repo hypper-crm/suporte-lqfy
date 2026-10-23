@@ -32,7 +32,7 @@ export type CardContentProps = {
   assignees: AvatarStackPerson[]
   // Implementation cards only.
   taskProgress?: TaskProgress
-  // Implementation cards only. The column the card is shown in.
+  // The column the card is shown in.
   columnStatus?: ColumnStatus
   // Days since the start date, only when the card is overdue.
   overdueDayCount?: number
@@ -43,12 +43,17 @@ export type CardContentProps = {
 
 type CardBodyProps = Omit<CardContentProps, 'appearance' | 'cover'>
 
-function SupportCardBody({ card, client, assignees, overdueDayCount }: CardBodyProps) {
+function SupportCardBody({ card, client, assignees, columnStatus, overdueDayCount }: CardBodyProps) {
   const startDate = formatDate(card.start_date)
 
   return (
     <>
-      <SupportCardLabels priority={card.priority} requestType={card.request_type} overdueDayCount={overdueDayCount} />
+      <SupportCardLabels
+        priority={card.priority}
+        requestType={card.request_type}
+        overdueDayCount={overdueDayCount}
+        columnStatus={columnStatus}
+      />
       <div className="flex flex-col gap-1.5">
         <CardClientHeader card={card} client={client} />
         {client && <p className="text-sm leading-snug font-normal break-words">{card.title}</p>}

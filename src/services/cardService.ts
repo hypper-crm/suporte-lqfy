@@ -3,12 +3,12 @@ import { supabase } from '../lib/supabase'
 import type { CardCoverInput, CardMove, CardRealtimeHandlers, CardUpdateInput, CreatedCard, NewCardInput } from '../types/board'
 import type { Board, Card, CardPriority, CardRequestType } from '../types/database'
 import { deleteAttachmentRecordsForCard, removeStorageObjects } from './attachmentService'
-import { deleteAssigneesForCard } from './cardAssigneeService'
+import { deleteAssigneesForCard, updateCardAssignees } from './cardAssigneeService'
 import { copyStepTemplatesToCard, deleteTasksForCard } from './cardTaskService'
 import { subscribeToTableChanges } from './realtimeChannel'
 
 const cardFields =
-  'id, board, column_id, title, description, client_id, start_date, position, priority, request_type, cover_attachment_id, show_client_cover, created_by, created_at, updated_at'
+  'id, board, column_id, title, description, client_id, start_date, position, priority, request_type, cover_attachment_id, created_by, created_at, updated_at'
 
 function optionalString(value: unknown): string | null {
   return typeof value === 'string' ? value : null
@@ -35,7 +35,6 @@ function toCard(record: Record<string, unknown>): Card {
     priority: optionalOption(record.priority, cardPriorities),
     request_type: optionalOption(record.request_type, cardRequestTypes),
     cover_attachment_id: optionalString(record.cover_attachment_id),
-    show_client_cover: record.show_client_cover === true,
     created_by: optionalString(record.created_by),
     created_at: String(record.created_at),
     updated_at: String(record.updated_at),
@@ -53,22 +52,54 @@ export async function fetchCards(board: Board): Promise<Card[]> {
 }
 
 // Implementation cards start with a copy of the current implementation steps as their checklist.
-export async function createCard({ board, columnId, title, clientId, position, createdBy }: NewCardInput): Promise<CreatedCard> {
+export async function createCard({
+  board,
+  columnId,
+  title,
+  clientId,
+  startDate = null,
+  description = null,
+  assigneeIds = [],
+  position,
+  createdBy,
+}: NewCardInput): Promise<CreatedCard> {
   const { data, error } = await supabase
     .from('cards')
-    .insert({ board, column_id: columnId, title, client_id: clientId, position, created_by: createdBy })
+    .insert({
+      board,
+      column_id: columnId,
+      title,
+      client_id: clientId,
+      start_date: startDate,
+      description,
+      position,
+      created_by: createdBy,
+    })
     .select(cardFields)
     .single()
   if (error) throw new Error(serviceErrors.cardCreate)
   const card = toCard(data)
+
+  // A card without its assignees or checklist would be incomplete, so it is removed again.
+  async function removeIncompleteCard() {
+    await deleteTasksForCard(card.id).catch(() => undefined)
+    await deleteAssigneesForCard(card.id).catch(() => undefined)
+    await supabase.from('cards').delete().eq('id', card.id)
+  }
+
+  try {
+    await updateCardAssignees(card.id, assigneeIds, [])
+  } catch {
+    await removeIncompleteCard()
+    throw new Error(serviceErrors.cardCreate)
+  }
+
   if (board !== 'implementation') return { card, tasks: [] }
 
   try {
     return { card, tasks: await copyStepTemplatesToCard(card.id) }
   } catch {
-    // A card without its checklist would be incomplete, so it is removed again.
-    await deleteTasksForCard(card.id).catch(() => undefined)
-    await supabase.from('cards').delete().eq('id', card.id)
+    await removeIncompleteCard()
     throw new Error(serviceErrors.checklistCopy)
   }
 }
@@ -106,10 +137,10 @@ export async function updateCard(
   return toCard(data)
 }
 
-export async function updateCardCover(cardId: string, { coverAttachmentId, showClientCover }: CardCoverInput): Promise<Card> {
+export async function updateCardCover(cardId: string, { coverAttachmentId }: CardCoverInput): Promise<Card> {
   const { data, error } = await supabase
     .from('cards')
-    .update({ cover_attachment_id: coverAttachmentId, show_client_cover: showClientCover })
+    .update({ cover_attachment_id: coverAttachmentId })
     .eq('id', cardId)
     .select(cardFields)
     .maybeSingle()

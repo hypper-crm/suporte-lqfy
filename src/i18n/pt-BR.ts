@@ -142,11 +142,17 @@ export const boards = {
     submit: 'Adicionar card',
     submitting: 'Adicionando…',
     titleRequired: 'Informe um título para o card.',
-    optionalTitleLabel: 'Título do card (opcional)',
-    selectClient: 'Selecione o cliente',
-    addClient: '+ Adicionar cliente',
-    clientRequired: 'Selecione o cliente do card.',
   },
+  newCard: 'Novo card',
+}
+
+export const newImplementation = {
+  title: 'Nova implementação',
+  clientName: 'Nome do cliente',
+  startDate: 'Data de início',
+  moreDetails: 'Mais detalhes',
+  description: 'Descrição',
+  cardNotCreated: 'Cliente criado, mas o card não foi criado.',
 }
 
 export const priorityLabels: Record<CardPriority, string> = {
@@ -171,7 +177,6 @@ export const cardDetails = {
   loadLatestVersion: 'Descartar minhas edições e carregar a versão mais recente',
   fields: {
     title: 'Título',
-    optionalTitle: 'Título (opcional)',
     description: 'Descrição',
     startDate: 'Data de início',
     client: 'Cliente',
@@ -181,8 +186,6 @@ export const cardDetails = {
   },
   noClient: 'Sem cliente',
   unknownClient: 'Cliente desconhecido',
-  titleAndDescription: 'Título e descrição',
-  noTitle: 'Sem título',
   unassigned: 'Sem responsável',
   addAssignee: 'Adicionar responsável',
   allMembersAssigned: 'Todos os membros já são responsáveis',
@@ -207,15 +210,17 @@ export const cardDetails = {
     noClientLinked: 'Nenhum cliente vinculado',
   },
   cover: {
-    title: 'Capa',
+    add: 'Adicionar capa',
+    change: 'Trocar',
+    remove: 'Remover',
+    removing: 'Removendo…',
+    pickerLabel: 'Escolher capa',
+    useImage: (fileName: string) => `Usar ${fileName} como capa`,
+    upload: 'Enviar imagem',
+    uploading: 'Enviando…',
     useAsCover: 'Usar como capa',
     settingCover: 'Definindo…',
     currentCover: 'Capa',
-    removeCover: 'Remover capa',
-    removingCover: 'Removendo…',
-    noCover: 'Este card não tem capa. Use “Usar como capa” em uma imagem anexada.',
-    hasCover: 'Uma imagem anexada é a capa deste card.',
-    showClientCover: 'Mostrar capa do cliente quando não houver capa do card',
   },
   deleteCard: {
     open: 'Excluir card',
@@ -274,9 +279,8 @@ export const attachments = {
   loading: 'Carregando anexos',
   empty: 'Nenhum anexo ainda.',
   realtimePaused: 'As atualizações em tempo real estão pausadas. Novos anexos da equipe podem não aparecer.',
-  dropHint: 'Arraste arquivos para cá, ou',
-  upload: 'Enviar arquivos',
-  acceptedTypes: 'PNG, JPG, WEBP, GIF, PDF, DOC/DOCX, XLS/XLSX, CSV, TXT ou ZIP, até 20 MB cada.',
+  dropHint: 'Arraste arquivos aqui',
+  upload: 'Adicionar arquivos',
   uploading: (fileName: string, fileSize: string) => `Enviando ${fileName} (${fileSize})…`,
   open: 'Abrir',
   opening: 'Abrindo…',
@@ -287,8 +291,8 @@ export const attachments = {
   noPreview: 'Sem prévia',
   loadingImage: 'Carregando imagem',
   fileTypeFallback: 'ARQUIVO',
-  rejectedType: (fileName: string) => `“${fileName}” não foi enviado: este tipo de arquivo não é permitido.`,
-  rejectedSize: (fileName: string) => `“${fileName}” não foi enviado: os arquivos devem ter no máximo 20 MB.`,
+  rejectedType: 'Tipo de arquivo não aceito.',
+  rejectedSize: 'Arquivo maior que 20 MB.',
 }
 
 export const clients = {
@@ -397,6 +401,7 @@ export const serviceErrors = {
   clientSaveMissing: 'Não foi possível salvar o cliente porque ele não existe mais ou você não tem permissão.',
   clientDuplicate: 'Já existe um cliente com estes dados.',
   clientEmailsSave: 'Não foi possível salvar os e-mails do cliente. Tente novamente.',
+  implementationCardsRename: 'O cliente foi salvo, mas não foi possível atualizar o nome nos cards de implementação. Tente novamente.',
   clientEmailsSavePartial: 'O cliente foi salvo, mas não foi possível atualizar os e-mails. Tente novamente.',
   clientDelete: 'Não foi possível excluir o cliente. Tente novamente.',
   clientCoverUpload: 'Não foi possível enviar a imagem de capa. O cliente não foi salvo. Tente novamente.',

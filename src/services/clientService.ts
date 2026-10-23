@@ -196,6 +196,12 @@ export async function createClient(input: ClientInput, coverChange: ClientCoverC
   return getClient(clientId, serviceErrors.clientCreate)
 }
 
+// Implementation cards are titled with their client's name, so the stored title follows the name.
+async function renameImplementationCards(clientId: string, name: string): Promise<void> {
+  const { error } = await supabase.from('cards').update({ title: name }).eq('board', 'implementation').eq('client_id', clientId)
+  if (error) throw new Error(serviceErrors.implementationCardsRename)
+}
+
 export async function updateClient(client: Client, input: ClientInput, coverChange: ClientCoverChange): Promise<Client> {
   const newCoverPath = coverChange.kind === 'replace' ? await uploadCover(client.id, coverChange.file, coverChange.mimeType) : null
   const coverValues =
@@ -216,6 +222,8 @@ export async function updateClient(client: Client, input: ClientInput, coverChan
 
   // The previous cover is no longer referenced once it was replaced or removed.
   if (coverChange.kind !== 'keep') await removePublicFiles(coverBucketName, coverPathOf(client.cover_image_url))
+
+  if (input.name !== client.name) await renameImplementationCards(client.id, input.name)
 
   try {
     await syncClientEmails(client.id, input.emails)

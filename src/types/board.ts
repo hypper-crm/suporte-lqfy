@@ -1,12 +1,19 @@
-import type { Board, BoardColumn, Card, CardAssignee, CardPriority, CardRequestType, CardTask } from './database'
+import type { Board, BoardColumn, BoardColumnColor, Card, CardAssignee, CardPriority, CardRequestType, CardTask } from './database'
 
 export type AppScreen = Board | 'clients' | 'stepSettings' | 'deadlineSettings' | 'profile'
 
-export type NewCardInput = {
-  board: Board
+// Values of a new card chosen in the app. Fields left undefined are not set.
+export type NewCardFields = {
   columnId: string
   title: string
   clientId: string | null
+  startDate?: string | null
+  description?: string | null
+  assigneeIds?: string[]
+}
+
+export type NewCardInput = NewCardFields & {
+  board: Board
   position: number
   createdBy: string
 }
@@ -42,10 +49,9 @@ export type CardUpdateInput = {
   requestType: CardRequestType | null
 }
 
-// Cover settings of a card. Fields left undefined are not changed.
+// The image attachment shown as the card's cover, or null for no cover.
 export type CardCoverInput = {
-  coverAttachmentId?: string | null
-  showClientCover?: boolean
+  coverAttachmentId: string | null
 }
 
 // Values saved from the card details form: the `cards` row plus the rows of `card_assignees`.
@@ -65,10 +71,7 @@ export type CardAssigneeRealtimeHandlers = {
   onConnectionChange: (isConnected: boolean) => void
 }
 
-// Color of a column's status badge, from its place in the board: first, middle or last.
-export type ColumnStatusTone = 'neutral' | 'warning' | 'success'
-
 export type ColumnStatus = {
   name: string
-  tone: ColumnStatusTone
+  color: BoardColumnColor
 }

@@ -10,9 +10,9 @@ export type NewAttachmentInput = {
 
 export type AttachmentRealtimeHandlers = RealtimeHandlers<CardAttachment>
 
-export type AttachmentUploadStatus = 'uploading' | 'rejected' | 'failed'
+export type AttachmentUploadStatus = 'uploading' | 'failed'
 
-// A file the user picked that is still uploading, or that could not be uploaded.
+// A file the user picked that is still uploading, or that failed to upload.
 export type AttachmentUpload = {
   id: string
   fileName: string

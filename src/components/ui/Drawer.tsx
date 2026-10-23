@@ -17,10 +17,12 @@ type DrawerProps = {
   titleLeading?: ReactNode
   // Badges shown under the title.
   headerBadges?: ReactNode
+  // Shown above the header, such as a card cover.
+  cover?: ReactNode
 }
 
 // Render inside AnimatePresence so the drawer can animate out.
-export function Drawer({ title, description, onClose, children, footer, headerAction, titleLeading, headerBadges }: DrawerProps) {
+export function Drawer({ title, description, onClose, children, footer, headerAction, titleLeading, headerBadges, cover }: DrawerProps) {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       // Overlays opened above the drawer mark the event as handled.
@@ -51,6 +53,7 @@ export function Drawer({ title, description, onClose, children, footer, headerAc
         // Below the md breakpoint the drawer is a full-screen sheet.
         className="relative flex h-full w-full flex-col bg-surface md:max-w-xl md:border-l md:border-border md:shadow-[-24px_0_48px_-24px_rgba(0,0,0,0.8)]"
       >
+        {cover}
         {/* The header stays in place while the body scrolls, with the same layout on every screen size. */}
         <header className="sticky top-0 z-raised flex shrink-0 items-start justify-between gap-3 border-b border-border bg-surface pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1rem,env(safe-area-inset-right))] pb-3 pl-[max(1rem,env(safe-area-inset-left))] md:gap-4 md:px-6 md:py-4">
           <div className="flex min-w-0 items-center gap-3 self-center">

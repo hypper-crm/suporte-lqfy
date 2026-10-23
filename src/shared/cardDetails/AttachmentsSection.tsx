@@ -1,4 +1,4 @@
-import { useCardAttachments } from '../../hooks/useCardAttachments'
+import type { CardAttachmentsState } from '../../hooks/useCardAttachments'
 import { attachments as attachmentStrings, common } from '../../i18n/pt-BR'
 import { isImageAttachment } from '../../lib/attachmentFiles'
 import type { CardCoverInput } from '../../types/board'
@@ -12,15 +12,25 @@ import { FileAttachmentList } from './FileAttachmentList'
 import { ImageAttachmentGallery } from './ImageAttachmentGallery'
 
 type AttachmentsSectionProps = {
-  cardId: string
-  currentUserId: string
+  // Shared with the cover picker of the drawer.
+  attachmentsState: CardAttachmentsState
   coverAttachmentId: string | null
   onUpdateCover: (input: CardCoverInput) => Promise<void>
 }
 
-export function AttachmentsSection({ cardId, currentUserId, coverAttachmentId, onUpdateCover }: AttachmentsSectionProps) {
-  const { attachments, uploads, isLoading, loadErrorMessage, isRealtimeDisconnected, reload, uploadFiles, dismissUpload, deleteAttachment } =
-    useCardAttachments(cardId, currentUserId)
+export function AttachmentsSection({ attachmentsState, coverAttachmentId, onUpdateCover }: AttachmentsSectionProps) {
+  const {
+    attachments,
+    uploads,
+    rejectionMessage,
+    isLoading,
+    loadErrorMessage,
+    isRealtimeDisconnected,
+    reload,
+    uploadFiles,
+    dismissUpload,
+    deleteAttachment,
+  } = attachmentsState
 
   const setAsCover = (attachmentId: string) => onUpdateCover({ coverAttachmentId: attachmentId })
 
@@ -74,7 +84,7 @@ export function AttachmentsSection({ cardId, currentUserId, coverAttachmentId, o
   return (
     <section className="flex flex-col gap-3">
       <h3 className="section-label">{attachmentStrings.title}</h3>
-      <AttachmentDropZone onFilesSelected={uploadFiles} />
+      <AttachmentDropZone rejectionMessage={rejectionMessage} onFilesSelected={uploadFiles} />
       <AttachmentUploadList uploads={uploads} onDismiss={dismissUpload} />
       {isRealtimeDisconnected && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

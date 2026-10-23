@@ -4,6 +4,7 @@ import { cardDetails } from '../../i18n/pt-BR'
 import { maximumCardTitleLength } from '../../lib/cardFormValues'
 import type { Client, Profile } from '../../types/database'
 import { Avatar } from '../../components/ui/Avatar'
+import { CollapsibleSection } from '../../components/ui/CollapsibleSection'
 import { Field } from '../../components/ui/Field'
 import { FormField } from '../../components/ui/FormField'
 import { Select, Textarea } from '../../components/ui/Input'
@@ -14,16 +15,12 @@ type CardFieldProps = {
   form: CardDetailsFormState
 }
 
-type CardTitleFieldProps = CardFieldProps & {
-  isRequired?: boolean
-}
-
-export function CardTitleField({ form, isRequired = true }: CardTitleFieldProps) {
+export function CardTitleField({ form }: CardFieldProps) {
   return (
     <FormField
       id="card-title"
-      label={isRequired ? cardDetails.fields.title : cardDetails.fields.optionalTitle}
-      required={isRequired}
+      label={cardDetails.fields.title}
+      required
       maxLength={maximumCardTitleLength}
       value={form.values.title}
       disabled={form.isSaving}
@@ -90,12 +87,41 @@ export function CardClientField({ form, clients }: CardClientFieldProps) {
   )
 }
 
+// Closed by default, with the start of the description as its preview.
+export function CardDescriptionSection({ form }: CardFieldProps) {
+  return (
+    <CollapsibleSection title={cardDetails.fields.description} preview={form.values.description.trim() || undefined}>
+      <CardDescriptionField form={form} />
+    </CollapsibleSection>
+  )
+}
+
 type CardAssigneesFieldProps = CardFieldProps & {
   profiles: Profile[]
 }
 
 export function CardAssigneesField({ form, profiles }: CardAssigneesFieldProps) {
-  const { assigneeIds } = form.values
+  return (
+    <AssigneesField
+      id="card-assignees"
+      assigneeIds={form.values.assigneeIds}
+      profiles={profiles}
+      disabled={form.isSaving}
+      onChange={(assigneeIds) => form.updateValue('assigneeIds', assigneeIds)}
+    />
+  )
+}
+
+type AssigneesFieldProps = {
+  id: string
+  assigneeIds: string[]
+  profiles: Profile[]
+  disabled: boolean
+  onChange: (assigneeIds: string[]) => void
+}
+
+// Team members picked one by one, shown with their avatars.
+export function AssigneesField({ id: fieldId, assigneeIds, profiles, disabled, onChange }: AssigneesFieldProps) {
   const profilesById = new Map(profiles.map((profile) => [profile.id, profile]))
   const unassignedProfiles = profiles.filter((profile) => !assigneeIds.includes(profile.id))
   // Team members that no longer exist stay listed, so saving does not drop them silently.
@@ -106,7 +132,7 @@ export function CardAssigneesField({ form, profiles }: CardAssigneesFieldProps) 
     )
 
   return (
-    <Field id="card-assignees" label={cardDetails.fields.assignees}>
+    <Field id={fieldId} label={cardDetails.fields.assignees}>
       {selectedMembers.length === 0 ? (
         <p className="text-sm text-subtle">{cardDetails.unassigned}</p>
       ) : (
@@ -121,8 +147,8 @@ export function CardAssigneesField({ form, profiles }: CardAssigneesFieldProps) 
                   type="button"
                   aria-label={cardDetails.removeAssignee(name)}
                   title={cardDetails.removeAssignee(name)}
-                  disabled={form.isSaving}
-                  onClick={() => form.updateValue('assigneeIds', assigneeIds.filter((assigneeId) => assigneeId !== id))}
+                  disabled={disabled}
+                  onClick={() => onChange(assigneeIds.filter((assigneeId) => assigneeId !== id))}
                   className="flex size-7 items-center justify-center rounded-full text-muted outline-none transition-colors duration-200 ease-fluid hover:bg-hover hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50"
                 >
                   <X aria-hidden="true" className="size-3.5" />
@@ -133,11 +159,11 @@ export function CardAssigneesField({ form, profiles }: CardAssigneesFieldProps) 
         </ul>
       )}
       <Select
-        id="card-assignees"
+        id={fieldId}
         value=""
-        disabled={form.isSaving || unassignedProfiles.length === 0}
+        disabled={disabled || unassignedProfiles.length === 0}
         onChange={(event) => {
-          if (event.target.value) form.updateValue('assigneeIds', [...assigneeIds, event.target.value])
+          if (event.target.value) onChange([...assigneeIds, event.target.value])
         }}
       >
         <option value="">{unassignedProfiles.length === 0 ? cardDetails.allMembersAssigned : cardDetails.addAssignee}</option>

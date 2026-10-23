@@ -11,23 +11,28 @@ import { resolveCardCover, type CardCoverImage } from '../../lib/cardCover'
 import { getColumnStatuses } from '../../lib/columnStatus'
 import { ImplementationCardDrawer } from '../../shared/ImplementationCardDrawer'
 import { SupportCardDrawer } from '../../shared/SupportCardDrawer'
+import type { NewCardFields } from '../../types/board'
 import type { Board } from '../../types/database'
 import { Button } from '../ui/Button'
 import { StatusMessage } from '../ui/StatusMessage'
 import { BoardSkeleton } from './BoardSkeleton'
 import { BoardMetricChips } from './BoardMetricChips'
 import { KanbanBoard } from './KanbanBoard'
+import { NewImplementationDrawer, type NewImplementationCardFields } from './NewImplementationDrawer'
 
 type BoardScreenProps = {
   board: Board
   currentUserId: string
+  // Implementation board only.
+  isNewImplementationOpen: boolean
+  onCloseNewImplementation: () => void
 }
 
 const noTasks: never[] = []
 
 const noAssigneeIds: string[] = []
 
-export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
+export function BoardScreen({ board, currentUserId, isNewImplementationOpen, onCloseNewImplementation }: BoardScreenProps) {
   const {
     columns,
     cards,
@@ -72,21 +77,16 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
     [columns, cards, teamSettings.overdueAfterDays],
   )
 
-  // Only implementation cards show the column as a status badge.
-  const columnStatuses = useMemo(
-    () => (board === 'implementation' ? getColumnStatuses(columns) : undefined),
-    [board, columns],
-  )
+  const columnStatuses = useMemo(() => getColumnStatuses(columns), [columns])
 
   const coversByCardId = useMemo(() => {
-    const clientsById = new Map(clients.map((client) => [client.id, client]))
     const covers = new Map<string, CardCoverImage>()
     for (const card of cards) {
-      const cover = resolveCardCover(card, card.client_id ? clientsById.get(card.client_id) : undefined, coverUrls)
+      const cover = resolveCardCover(card, coverUrls)
       if (cover) covers.set(card.id, cover)
     }
     return covers
-  }, [cards, clients, coverUrls])
+  }, [cards, coverUrls])
 
   if (isLoading || isLoadingClients || teamSettings.isLoading) {
     return <BoardSkeleton />
@@ -127,14 +127,32 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
     if (board === 'implementation') cardTasks.reload()
   }
 
-  async function createCardWithChecklist(columnId: string, title: string, clientId: string | null) {
-    cardTasks.receiveTasks(await createCard(columnId, title, clientId))
+  async function createCardWithChecklist(fields: NewCardFields) {
+    cardTasks.receiveTasks(await createCard(fields))
+  }
+
+  // New implementation cards start in the first column.
+  async function createImplementationCard({ clientId, title, startDate, description, assigneeIds }: NewImplementationCardFields) {
+    const firstColumn = columns[0]
+    if (!firstColumn) throw new Error(boards.noColumns)
+    await createCardWithChecklist({ columnId: firstColumn.id, title, clientId, startDate, description, assigneeIds })
   }
 
   const selectedCard = selectedCardId ? cards.find((card) => card.id === selectedCardId) : undefined
   const closeDrawer = () => setSelectedCardId(null)
 
   function renderDrawer() {
+    if (board === 'implementation' && isNewImplementationOpen) {
+      return (
+        <NewImplementationDrawer
+          key="new-implementation"
+          profiles={profiles}
+          onCreateClient={createClient}
+          onCreateCard={createImplementationCard}
+          onClose={onCloseNewImplementation}
+        />
+      )
+    }
     if (!selectedCardId) return null
     const drawerProps = {
       card: selectedCard,
@@ -142,6 +160,8 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
       clients,
       profiles,
       currentUserId,
+      cover: coversByCardId.get(selectedCardId),
+      columnStatus: selectedCard ? columnStatuses.get(selectedCard.column_id) : undefined,
       overdueDayCount: overdueDayCounts.get(selectedCardId),
       onSave: updateCard,
       onUpdateCover: updateCardCover,
@@ -158,7 +178,6 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
         tasks={cardTasks.tasksByCardId.get(selectedCardId) ?? noTasks}
         checklistStatus={cardTasks}
         checklistActions={cardTasks}
-        columnStatus={selectedCard ? columnStatuses?.get(selectedCard.column_id) : undefined}
       />
     )
   }
@@ -217,7 +236,6 @@ export function BoardScreen({ board, currentUserId }: BoardScreenProps) {
             coversByCardId={coversByCardId}
             onMoveCard={moveCard}
             onCreateCard={createCardWithChecklist}
-            onCreateClient={createClient}
             onOpenCard={setSelectedCardId}
           />
         </div>

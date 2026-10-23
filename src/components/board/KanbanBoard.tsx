@@ -23,8 +23,7 @@ import type { CardCoverImage } from '../../lib/cardCover'
 import { groupCardIdsByColumn, positionBetween, type CardIdsByColumn } from '../../lib/cardPosition'
 import { getColumnStatuses } from '../../lib/columnStatus'
 import { mouseActivationConstraint, touchActivationConstraint } from '../../lib/dragSensors'
-import type { CardMove } from '../../types/board'
-import type { ClientCoverChange, ClientInput } from '../../types/client'
+import type { CardMove, NewCardFields } from '../../types/board'
 import type { BoardColumn, Card, Client, Profile } from '../../types/database'
 import { fluidEaseCss } from '../ui/motionPresets'
 import { BoardColumnView } from './BoardColumnView'
@@ -40,8 +39,7 @@ type KanbanBoardProps = {
   overdueDayCounts: Map<string, number>
   coversByCardId: Map<string, CardCoverImage>
   onMoveCard: (cardId: string, move: CardMove) => void
-  onCreateCard: (columnId: string, title: string, clientId: string | null) => Promise<void>
-  onCreateClient: (input: ClientInput, coverChange: ClientCoverChange) => Promise<Client>
+  onCreateCard: (fields: NewCardFields) => Promise<void>
   onOpenCard: (cardId: string) => void
 }
 
@@ -85,7 +83,6 @@ export function KanbanBoard({
   coversByCardId,
   onMoveCard,
   onCreateCard,
-  onCreateClient,
   onOpenCard,
 }: KanbanBoardProps) {
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
@@ -102,11 +99,7 @@ export function KanbanBoard({
   const savedCardIds = useMemo(() => groupCardIdsByColumn(columns, cards), [columns, cards])
   const cardsById = useMemo(() => new Map(cards.map((card) => [card.id, card])), [cards])
   const clientsById = useMemo(() => new Map(clients.map((client) => [client.id, client])), [clients])
-  // Only implementation cards show the column as a status badge.
-  const columnStatuses = useMemo(
-    () => (columns[0]?.board === 'implementation' ? getColumnStatuses(columns) : undefined),
-    [columns],
-  )
+  const columnStatuses = useMemo(() => getColumnStatuses(columns), [columns])
   const visibleCardIds = previewCardIds ?? savedCardIds
   const activeCard = activeCardId ? cardsById.get(activeCardId) : undefined
   const presenceContext = useMemo(
@@ -197,13 +190,12 @@ export function KanbanBoard({
             clientsById={clientsById}
             assigneeIdsByCardId={assigneeIdsByCardId}
             profilesById={profilesById}
-            columnStatus={columnStatuses?.get(column.id)}
+            columnStatus={{ name: column.name, color: column.color }}
             progressByCardId={progressByCardId}
             overdueDayCounts={overdueDayCounts}
             coversByCardId={coversByCardId}
             presenceContext={presenceContext}
             onCreateCard={onCreateCard}
-            onCreateClient={onCreateClient}
             onOpenCard={onOpenCard}
           />
         ))}
@@ -215,7 +207,7 @@ export function KanbanBoard({
             client={activeCard.client_id ? clientsById.get(activeCard.client_id) : undefined}
             assignees={toAssigneePeople(assigneeIdsByCardId.get(activeCard.id), profilesById)}
             taskProgress={progressByCardId.get(activeCard.id)}
-            columnStatus={columnStatuses?.get(findColumnId(visibleCardIds, activeCard.id) ?? activeCard.column_id)}
+            columnStatus={columnStatuses.get(findColumnId(visibleCardIds, activeCard.id) ?? activeCard.column_id)}
             overdueDayCount={overdueDayCounts.get(activeCard.id)}
             cover={coversByCardId.get(activeCard.id)}
             appearance="dragOverlay"

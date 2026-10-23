@@ -13,7 +13,7 @@ import {
   updateCardCover as updateCardCoverRequest,
 } from '../services/cardService'
 import { listProfiles } from '../services/profileService'
-import type { CardCoverInput, CardDetailsInput, CardMove, SavedCardDetails } from '../types/board'
+import type { CardCoverInput, CardDetailsInput, CardMove, NewCardFields, SavedCardDetails } from '../types/board'
 import type { Board, BoardColumn, Card, CardAssignee, CardTask, Profile } from '../types/database'
 
 // How long an optimistic move waits for its own realtime echo before the echo is no longer expected.
@@ -33,7 +33,7 @@ export type BoardState = {
   dismissMoveError: () => void
   moveCard: (cardId: string, move: CardMove) => void
   // Resolves with the checklist copied into a new implementation card.
-  createCard: (columnId: string, title: string, clientId: string | null) => Promise<CardTask[]>
+  createCard: (fields: NewCardFields) => Promise<CardTask[]>
   updateCard: (cardId: string, input: CardDetailsInput) => Promise<SavedCardDetails>
   updateCardCover: (cardId: string, input: CardCoverInput) => Promise<void>
   deleteCard: (cardId: string) => Promise<void>
@@ -187,10 +187,12 @@ export function useBoard(board: Board, currentUserId: string): BoardState {
   )
 
   const createCard = useCallback(
-    async (columnId: string, title: string, clientId: string | null) => {
-      const position = positionAfterLast(cards.filter((card) => card.column_id === columnId))
-      const { card: createdCard, tasks } = await createCardRequest({ board, columnId, title, clientId, position, createdBy: currentUserId })
+    async (fields: NewCardFields) => {
+      const position = positionAfterLast(cards.filter((card) => card.column_id === fields.columnId))
+      const { card: createdCard, tasks } = await createCardRequest({ ...fields, board, position, createdBy: currentUserId })
       setCards((current) => upsertById(current, createdCard))
+      const assigneeRows = (fields.assigneeIds ?? []).map((profileId) => ({ card_id: createdCard.id, profile_id: profileId }))
+      setAssignees((current) => addAssignees(current, assigneeRows))
       return tasks
     },
     [board, cards, currentUserId],

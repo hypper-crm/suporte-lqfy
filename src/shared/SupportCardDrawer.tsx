@@ -1,11 +1,13 @@
+import { ColumnStatusBadge } from '../components/board/ColumnStatusBadge'
 import { OverdueBadge } from '../components/board/OverdueBadge'
 import { Drawer } from '../components/ui/Drawer'
 import { useCardDrawer, type CardDrawerProps } from '../hooks/useCardDrawer'
 import { cardDetails } from '../i18n/pt-BR'
+import type { ColumnStatus } from '../types/board'
 import type { Card, Profile } from '../types/database'
 import { AttachmentsSection } from './cardDetails/AttachmentsSection'
-import { CardCoverSection } from './cardDetails/CardCoverSection'
 import { CardDetailsForm, CardSaveButton } from './cardDetails/CardDetailsForm'
+import { CardDrawerCoverSlot } from './cardDetails/CardDrawerCoverSlot'
 import {
   CardAssigneesField,
   CardClientField,
@@ -20,20 +22,32 @@ import { CardPriorityField, CardRequestTypeField } from './cardDetails/SupportCa
 
 type SupportCardContentProps = CardDrawerProps & {
   profiles: Profile[]
-  currentUserId: string
+  // The column the card is in, shown as a status badge.
+  columnStatus: ColumnStatus | undefined
 }
 
-function SupportCardContent({ profiles, currentUserId, ...drawerProps }: SupportCardContentProps) {
-  const { card, clients, overdueDayCount } = drawerProps
-  const { form, linkedClient, requestClose, updateCover, deleteCard } = useCardDrawer(drawerProps)
+function SupportCardContent({ profiles, columnStatus, ...drawerProps }: SupportCardContentProps) {
+  const { card, cover, overdueDayCount } = drawerProps
+  const drawer = useCardDrawer(drawerProps)
+  const { form, linkedClient, attachmentsState, requestClose, updateCover, deleteCard } = drawer
+
+  const hasBadges = columnStatus !== undefined || overdueDayCount !== undefined
 
   return (
     <Drawer
       title={cardDetails.title}
       description={card.title}
       onClose={requestClose}
+      cover={<CardDrawerCoverSlot card={card} cover={cover} drawer={drawer} />}
       headerAction={<CardSaveButton form={form} />}
-      headerBadges={overdueDayCount !== undefined && <OverdueBadge dayCount={overdueDayCount} />}
+      headerBadges={
+        hasBadges && (
+          <>
+            {columnStatus && <ColumnStatusBadge status={columnStatus} />}
+            <OverdueBadge dayCount={overdueDayCount} />
+          </>
+        )
+      }
     >
       <ClientInfoPanel client={linkedClient} />
       <CardDetailsForm form={form}>
@@ -44,16 +58,10 @@ function SupportCardContent({ profiles, currentUserId, ...drawerProps }: Support
         </div>
         <CardDescriptionField form={form} />
         <CardStartDateField form={form} />
-        <CardClientField form={form} clients={clients} />
+        <CardClientField form={form} clients={drawerProps.clients} />
         <CardAssigneesField form={form} profiles={profiles} />
       </CardDetailsForm>
-      <CardCoverSection card={card} onUpdateCover={updateCover} />
-      <AttachmentsSection
-        cardId={card.id}
-        currentUserId={currentUserId}
-        coverAttachmentId={card.cover_attachment_id}
-        onUpdateCover={updateCover}
-      />
+      <AttachmentsSection attachmentsState={attachmentsState} coverAttachmentId={card.cover_attachment_id} onUpdateCover={updateCover} />
       <DeleteCardSection cardTitle={card.title} onConfirm={deleteCard} />
     </Drawer>
   )

@@ -41,11 +41,15 @@ export type Client = ClientRow & {
   emails: ClientEmail[]
 }
 
+// Color of the column's status badge.
+export type BoardColumnColor = 'neutral' | 'blue' | 'amber' | 'green' | 'red'
+
 export type BoardColumn = {
   id: string
   board: Board
   name: string
   position: number
+  color: BoardColumnColor
 }
 
 export type Card = {
@@ -61,8 +65,6 @@ export type Card = {
   request_type: CardRequestType | null
   // An image attachment of the card shown as its cover.
   cover_attachment_id: string | null
-  // Falls back to the client's cover image when the card has no cover of its own.
-  show_client_cover: boolean
   created_by: string | null
   created_at: string
   updated_at: string

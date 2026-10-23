@@ -27,6 +27,8 @@ export const acceptedFileExtensions = Object.keys(mimeTypesByExtension)
   .map((extension) => `.${extension}`)
   .join(',')
 
+export const acceptedCoverImageExtensions = imageExtensions.map((extension) => `.${extension}`).join(',')
+
 const maximumStorageFileNameLength = 100
 
 export type AttachmentFileCheck = { isAccepted: true; mimeType: string } | { isAccepted: false; errorMessage: string }
@@ -39,12 +41,18 @@ export function getFileExtension(fileName: string): string {
 export function checkAttachmentFile(file: File): AttachmentFileCheck {
   const mimeType = mimeTypesByExtension[getFileExtension(file.name)]
   if (!mimeType) {
-    return { isAccepted: false, errorMessage: attachments.rejectedType(file.name) }
+    return { isAccepted: false, errorMessage: attachments.rejectedType }
   }
   if (file.size > maximumAttachmentSizeInBytes) {
-    return { isAccepted: false, errorMessage: attachments.rejectedSize(file.name) }
+    return { isAccepted: false, errorMessage: attachments.rejectedSize }
   }
   return { isAccepted: true, mimeType }
+}
+
+// Card covers accept only the image types of the attachments.
+export function checkCoverImageFile(file: File): AttachmentFileCheck {
+  if (!imageExtensions.includes(getFileExtension(file.name))) return { isAccepted: false, errorMessage: attachments.rejectedType }
+  return checkAttachmentFile(file)
 }
 
 export function isImageAttachment(attachment: CardAttachment): boolean {

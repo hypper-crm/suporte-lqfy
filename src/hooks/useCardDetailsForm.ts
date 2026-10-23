@@ -26,12 +26,12 @@ export type CardDetailsFormState = {
 }
 
 // `card` and `assigneeIds` are live values from the board, kept up to date by realtime.
-// `getFallbackTitle` gives the title saved when the title field is empty, such as the client's name.
+// `getLinkedTitle` gives a title that replaces the title field when saving, such as the client's name.
 export function useCardDetailsForm(
   card: Card,
   assigneeIds: string[],
   onSave: (input: CardDetailsInput) => Promise<SavedCardDetails>,
-  getFallbackTitle?: (clientId: string) => string | undefined,
+  getLinkedTitle?: (clientId: string) => string | undefined,
 ): CardDetailsFormState {
   // The saved values the current edits started from.
   const [baseValues, setBaseValues] = useState(() => toCardFormValues({ card, assigneeIds }))
@@ -69,7 +69,7 @@ export function useCardDetailsForm(
   }, [])
 
   const save = useCallback(async () => {
-    const title = values.title.trim() ? values.title : (getFallbackTitle?.(values.clientId) ?? '')
+    const title = getLinkedTitle?.(values.clientId) ?? values.title
     const titleError = validateCardTitle(title)
     setTitleErrorMessage(titleError)
     if (titleError) return
@@ -88,7 +88,7 @@ export function useCardDetailsForm(
     } finally {
       setIsSaving(false)
     }
-  }, [values, onSave, getFallbackTitle])
+  }, [values, onSave, getLinkedTitle])
 
   const loadLatestVersion = useCallback(() => {
     setBaseValues(liveValues)
